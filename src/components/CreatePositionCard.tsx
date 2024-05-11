@@ -44,7 +44,6 @@ const CreatePositionCard = () => {
                         </Flex>
                         <Select
                             placeholder="Currency"
-                            placeholder="Yield"
                             backgroundColor={colors.offBlack}
                             color={colors.lightBlue[100]}
                             borderColor={colors.lightBlue[200]}
