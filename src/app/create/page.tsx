@@ -11,9 +11,10 @@ const CreatePage = () => {
     return (
         <Flex
             height="100vh"
-            alignItems="center"
+            alignItems="flex-start"
             justifyContent="center"
             backgroundColor={bgColor}
+            pt="10vh"
         >
             <Flex direction="column" align="center">
                 <Text fontSize="5xl" fontWeight="bold" color={colors.lightBlue[100]} mb={4}>Create Position</Text>

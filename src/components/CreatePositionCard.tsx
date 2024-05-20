@@ -172,7 +172,15 @@ const CreatePositionCard = () => {
                     This position is a synthetic equity swap between Leg A and Leg B...
                 </Text>
                 <Flex justifyContent="center">
-                    <Button w={150} mt={4} backgroundColor={colors.lightBlue[200]} color={colors.offBlack}>Create</Button>
+                    <Button
+                        w={150}
+                        mt={4}
+                        backgroundColor={colors.lightBlue[200]}
+                        color={colors.offBlack}
+                        _hover={{ bg: colors.lightBlue[100] }}
+                    >
+                        Create
+                    </Button>
                 </Flex>
             </Flex>
         </Flex>

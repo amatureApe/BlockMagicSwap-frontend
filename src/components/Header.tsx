@@ -1,7 +1,40 @@
+"use client"
+
+import { ethers } from 'ethers';
+import { useEffect, useState } from 'react';
+
 import { Flex, Box, Text, Button, Link } from '@chakra-ui/react';
+
 import { colors } from './styles/colors';
 
+interface Window {
+    ethereum?: {
+        isMetaMask?: boolean;
+        request: (request: { method: string, params?: Array<any> }) => Promise<any>;
+        on: (event: string, callback: (...args: any[]) => void) => void;
+    };
+}
+
 const Header = () => {
+    const [account, setAccount] = useState<string | null>(null);
+
+    const connectAccount = async () => {
+        if (window.ethereum) {
+            try {
+                const accounts = await window.ethereum.request({
+                    method: "eth_requestAccounts"
+                });
+                if (accounts.length > 0) {
+                    setAccount(accounts[0]);
+                }
+            } catch (error) {
+                console.error("Failed to connect account:", error);
+            }
+        } else {
+            alert('MetaMask is not installed. Please install it to use this feature!');
+        }
+    }
+
     return (
         <Flex as="header" bg={colors.offBlack} p={4} color="white" justifyContent="space-between" alignItems="center">
             <Flex gap="10" ml={8}>
@@ -26,12 +59,23 @@ const Header = () => {
             </Flex>
 
             <Box>
-                <Button colorScheme="teal" mr={4}>
-                    Login
-                </Button>
-                <Button colorScheme="teal">
-                    Sign Up
-                </Button>
+                {account ? (
+                    <Flex direction="row" align="center" px={5}>
+                        <Button
+                            bg={colors.lightBlue[200]}
+                            color={colors.offBlack}
+                            _hover={{ bg: colors.lightBlue[100] }}
+                        >
+                            <Flex direction="column">
+                                <Text fontSize={16}>{account.slice(0, 5) + '...' + account.slice(-4)}</Text>
+                            </Flex>
+
+                        </Button>
+                    </Flex>) : (
+                    <Button colorScheme="teal" onClick={connectAccount}>
+                        Connect Wallet
+                    </Button>
+                )}
             </Box>
         </Flex>
     );
