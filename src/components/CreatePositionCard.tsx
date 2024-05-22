@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Box, Flex, Text, Input, Select, Button, Collapse } from '@chakra-ui/react';
+import { Box, Flex, Text, Input, Select, Button, Collapse, Radio, RadioGroup, Stack } from '@chakra-ui/react';
 import { ArrowDownIcon, ArrowUpIcon } from '@chakra-ui/icons';
 
 import { colors } from './styles/colors';
@@ -10,14 +10,25 @@ const CreatePositionCard = () => {
     const [currency, setCurrency] = useState('');
     const [notional, setNotional] = useState('');
     const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+    const [period, setPeriod] = useState("");
+    const [intervals, setIntervals] = useState<number | "">("");
     const [amplifier, setAmplifier] = useState('');
     const [fixDate, setFixDate] = useState('');
     const [yieldValue, setYield] = useState('');  // "yield" is a reserved word in JavaScript
     const [reserve, setReserve] = useState('');
+
     const toggleAdvanced = () => {
         setShowAdvanced(!showAdvanced);
     }
+
+    const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setPeriod(e.target.value);
+    };
+
+    const handleIntervalsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setIntervals(value === "" ? "" : Number(value));
+    };
 
     return (
         <Flex align="center" justify="center" bg={colors.offBlack} rounded="md" boxShadow="xl" p={8}>
@@ -57,7 +68,7 @@ const CreatePositionCard = () => {
                             <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Notional: </Text>
                         </Flex>
                         <Input
-                            placeholder="Notional"
+                            placeholder="Notional must be a multiple of 10"
                             value={notional}
                             backgroundColor={colors.offBlack}
                             color={colors.lightBlue[100]}
@@ -82,16 +93,30 @@ const CreatePositionCard = () => {
                     </Flex>
                     <Flex>
                         <Flex alignItems="center">
-                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">End Date: </Text>
+                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">Period: </Text>
+                        </Flex>
+                        <RadioGroup onChange={setPeriod} value={period}>
+                            <Stack direction="row" color={colors.offWhite}>
+                                <Radio value="Weekly" colorScheme="white">Weekly</Radio>
+                                <Radio value="Monthly" colorScheme="white">Monthly</Radio>
+                                <Radio value="Monthly" colorScheme="white">Quarterly</Radio>
+                                <Radio value="Yearly" colorScheme="white">Yearly</Radio>
+                            </Stack>
+                        </RadioGroup>
+                    </Flex>
+                    <Flex>
+                        <Flex alignItems="center">
+                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">Intervals: </Text>
                         </Flex>
                         <Input
-                            placeholder="End Date"
+                            type="number" // Set the type to number
+                            placeholder="The number of total period intervals"
                             backgroundColor={colors.offBlack}
                             color={colors.lightBlue[100]}
                             borderColor={colors.lightBlue[200]}
                             _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
+                            value={intervals}
+                            onChange={handleIntervalsChange}
                         />
                     </Flex>
                     <Flex align="center" onClick={() => setShowAdvanced(!showAdvanced)}>

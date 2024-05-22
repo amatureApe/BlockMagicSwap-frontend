@@ -1,29 +1,17 @@
-"use client"
-
+// Header.tsx
+"use client";
 import { ethers } from 'ethers';
-import { useEffect, useState } from 'react';
-
 import { Flex, Box, Text, Button, Link } from '@chakra-ui/react';
-
 import { colors } from './styles/colors';
+import { useWallet } from '@/context/WalletConnect';
 
-interface Window {
-    ethereum?: {
-        isMetaMask?: boolean;
-        request: (request: { method: string, params?: Array<any> }) => Promise<any>;
-        on: (event: string, callback: (...args: any[]) => void) => void;
-    };
-}
-
-const Header = () => {
-    const [account, setAccount] = useState<string | null>(null);
+const Header: React.FC = () => {
+    const { account, setAccount } = useWallet();
 
     const connectAccount = async () => {
         if (window.ethereum) {
             try {
-                const accounts = await window.ethereum.request({
-                    method: "eth_requestAccounts"
-                });
+                const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
                 if (accounts.length > 0) {
                     setAccount(accounts[0]);
                 }
@@ -33,7 +21,7 @@ const Header = () => {
         } else {
             alert('MetaMask is not installed. Please install it to use this feature!');
         }
-    }
+    };
 
     return (
         <Flex as="header" bg={colors.offBlack} p={4} color="white" justifyContent="space-between" alignItems="center">
@@ -57,21 +45,16 @@ const Header = () => {
                     <Text fontSize="lg" fontWeight="bold">Staking</Text>
                 </Link>
             </Flex>
-
             <Box>
                 {account ? (
                     <Flex direction="row" align="center" px={5}>
-                        <Button
-                            bg={colors.lightBlue[200]}
-                            color={colors.offBlack}
-                            _hover={{ bg: colors.lightBlue[100] }}
-                        >
+                        <Button bg={colors.lightBlue[200]} color={colors.offBlack} _hover={{ bg: colors.lightBlue[100] }}>
                             <Flex direction="column">
                                 <Text fontSize={16}>{account.slice(0, 5) + '...' + account.slice(-4)}</Text>
                             </Flex>
-
                         </Button>
-                    </Flex>) : (
+                    </Flex>
+                ) : (
                     <Button colorScheme="teal" onClick={connectAccount}>
                         Connect Wallet
                     </Button>
