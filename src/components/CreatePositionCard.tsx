@@ -5,6 +5,10 @@ import { ArrowDownIcon, ArrowUpIcon } from '@chakra-ui/icons';
 
 import { colors } from './styles/colors';
 
+import contractConnection from '@/contract/contractConnection';
+import { addresses } from '@/contract/addresses';
+import cryptoSwapAbi from '@/contract/CryptoSwapAbi.json';
+
 const CreatePositionCard = () => {
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [currency, setCurrency] = useState('');
@@ -29,6 +33,27 @@ const CreatePositionCard = () => {
         const value = e.target.value;
         setIntervals(value === "" ? "" : Number(value));
     };
+
+    const handleCreatePosition = async () => {
+        const contract = await contractConnection({ address: addresses.arbitrum.cryptoSwap, abi: cryptoSwapAbi })
+        if (!contract) {
+            console.error("Contract not connected");
+            return;
+        }
+
+        const tx = await contract.createPosition(
+            currency,
+            notional,
+            startDate,
+            period,
+            intervals,
+            amplifier,
+            fixDate,
+            yieldValue,
+            reserve
+        );
+        console.log("Transaction hash:", tx.hash);
+    }
 
     return (
         <Flex align="center" justify="center" bg={colors.offBlack} rounded="md" boxShadow="xl" p={8}>
