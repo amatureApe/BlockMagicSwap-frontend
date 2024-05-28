@@ -5,15 +5,12 @@ import CreatePositionCard from '@/components/CreatePositionCard';
 import { colors } from '@/components/styles/colors';
 
 const CreatePage = () => {
-    const bgColor = useColorModeValue(colors.darkGray, 'gray.100');
-    const textColor = useColorModeValue(colors.offWhite, 'white');
 
     return (
         <Flex
             height="100vh"
             alignItems="flex-start"
             justifyContent="center"
-            backgroundColor={bgColor}
             pt="10vh"
         >
             <Flex direction="column" align="center">

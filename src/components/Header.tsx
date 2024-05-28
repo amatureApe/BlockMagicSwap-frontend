@@ -1,7 +1,7 @@
 // Header.tsx
 "use client";
 import { ethers } from 'ethers';
-import { Flex, Box, Text, Button, Link } from '@chakra-ui/react';
+import { Flex, Box, Text, Button, Link, useColorModeValue } from '@chakra-ui/react';
 import { colors } from './styles/colors';
 import { useWallet } from '@/context/WalletConnect';
 
@@ -23,8 +23,11 @@ const Header: React.FC = () => {
         }
     };
 
+    const bgColor = useColorModeValue(`#000000BB`, '#000000CC'); // Use hexadecimal color with transparency
+
+
     return (
-        <Flex as="header" bg={colors.offBlack} p={4} color="white" justifyContent="space-between" alignItems="center">
+        <Flex as="header" bg={bgColor} p={4} color="white" justifyContent="space-between" alignItems="center">
             <Flex gap="10" ml={8}>
                 <Link href="/">
                     <Text fontSize="lg" fontWeight="bold">Home</Text>
