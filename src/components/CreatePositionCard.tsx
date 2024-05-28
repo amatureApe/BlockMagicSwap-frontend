@@ -1,25 +1,42 @@
 import React, { useState } from 'react';
-import { Box, Flex, Text, Input, Select, Button, Collapse, Radio, RadioGroup, Stack } from '@chakra-ui/react';
+import { Box, Flex, Text, Input, Select, Button, Collapse, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper } from '@chakra-ui/react';
 import { ArrowDownIcon, ArrowUpIcon } from '@chakra-ui/icons';
 
 import { colors } from './styles/colors';
 import contractConnection from '@/contract/contractConnection';
 import { addresses } from '@/contract/addresses';
 import cryptoSwapAbi from '@/contract/CryptoSwapAbi.json';
+import { feedOptions, periodOptions, tokenOptions, yieldOptions } from './utils/selectOptions';
+
 
 const CreatePositionCard = () => {
-    const [showAdvanced, setShowAdvanced] = useState(false);
-    const [contractCreationCount, setContractCreationCount] = useState('');
-    const [notionalAmount, setNotionalAmount] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [feedIdA, setFeedIdA] = useState('');
-    const [feedIdB, setFeedIdB] = useState('');
-    const [periodType, setPeriodType] = useState('');
-    const [totalIntervals, setTotalIntervals] = useState('');
-    const [settlementTokenId, setSettlementTokenId] = useState('');
-    const [yieldId, setYieldId] = useState('');
+    const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
+    const [contractCreationCount, setContractCreationCount] = useState<number>(0);
+    const [notionalAmount, setNotionalAmount] = useState<number>(0);
+    const [startDate, setStartDate] = useState<number>(0);
+    const [feedIdA, setFeedIdA] = useState<number | null>(null);
+    const [feedIdB, setFeedIdB] = useState<number | null>(null);
+    const [periodInterval, setPeriodInterval] = useState<number | null>(null);
+    const [totalIntervals, setTotalIntervals] = useState<number>(0);
+    const [settlementTokenId, setSettlementTokenId] = useState<number | null>(null);
+    const [yieldId, setYieldId] = useState<number | null>(null);
 
-    const toggleAdvanced = () => setShowAdvanced(!showAdvanced);
+    const handleNumericChange = (value: string, setState: React.Dispatch<React.SetStateAction<number>>) => {
+        const numValue = Number(value);
+        console.log(numValue)
+        if (!isNaN(numValue)) {
+            setState(numValue);
+        }
+
+        console.log("priceFeedA", feedIdA);
+        console.log("priceFeedB", feedIdB);
+
+    };
+
+    const handleDateChange = (dateStr: string) => {
+        const date = new Date(dateStr + 'T00:00:00Z'); // Append 'T00:00:00Z' to set time to 00:00 UTC
+        setStartDate(date.getTime()); // Convert the date to a timestamp and update state
+    };
 
     const handleOpenSwap = async () => {
         const contract = await contractConnection({ address: addresses.arbitrum.contracts.cryptoSwap, abi: cryptoSwapAbi });
@@ -34,7 +51,7 @@ const CreatePositionCard = () => {
             startDate,
             feedIdA,
             feedIdB,
-            periodType,
+            periodInterval,
             totalIntervals,
             settlementTokenId,
             yieldId
@@ -48,11 +65,34 @@ const CreatePositionCard = () => {
                 <Flex direction="column" borderBottom="2px solid" borderColor={colors.lightBlue[200]} pb={2}>
                     <Flex gap={8} justifyContent="space-between">
                         <Flex>
-                            <Select value={feedIdA} onChange={(e) => setFeedIdA(e.target.value)} placeholder="Leg A" variant="filled" bg={colors.offBlack} color={colors.offWhite} />
-                        </Flex>
+                            <Select
+                                placeholder="Leg A"
+                                value={feedIdA ?? ''}
+                                onChange={(e) => setFeedIdA(e.target.value ? Number(e.target.value) : null)}
+                                backgroundColor={colors.offBlack}
+                                color={colors.lightBlue[100]}
+                                borderColor={colors.lightBlue[200]}
+                                _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
+                            >
+                                {feedOptions.map(option => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
+                            </Select>                        </Flex>
                         <Box width="2px" bg={colors.lightBlue[200]} height="40px" />
                         <Flex>
-                            <Select value={feedIdB} onChange={(e) => setFeedIdB(e.target.value)} placeholder="Leg A" variant="filled" bg={colors.offBlack} color={colors.offWhite} />
+                            <Select
+                                placeholder="Leg B"
+                                value={feedIdB ?? ''}
+                                onChange={(e) => setFeedIdB(e.target.value ? Number(e.target.value) : null)}
+                                backgroundColor={colors.offBlack}
+                                color={colors.lightBlue[100]}
+                                borderColor={colors.lightBlue[200]}
+                                _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
+                            >
+                                {feedOptions.map(option => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
+                            </Select>
                         </Flex>
                     </Flex>
                 </Flex>
@@ -66,14 +106,18 @@ const CreatePositionCard = () => {
                             <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Currency: </Text>
                         </Flex>
                         <Select
-                            placeholder="Select Settlement Token"
-                            value={settlementTokenId}
-                            onChange={(e) => setSettlementTokenId(e.target.value)}
+                            placeholder="Settlement Token"
+                            value={settlementTokenId ?? ''}
+                            onChange={(e) => setSettlementTokenId(e.target.value ? Number(e.target.value) : null)}
                             backgroundColor={colors.offBlack}
                             color={colors.lightBlue[100]}
                             borderColor={colors.lightBlue[200]}
                             _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                        />
+                        >
+                            {tokenOptions.map(option => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                        </Select>
                     </Flex>
                     <Flex>
                         <Flex alignItems="center">
@@ -82,7 +126,7 @@ const CreatePositionCard = () => {
                         <Input
                             placeholder="Notional must be a multiple of 10"
                             value={notionalAmount}
-                            onChange={(e) => setNotionalAmount(e.target.value)}
+                            onChange={(e) => handleNumericChange(e.target.value, setNotionalAmount)}
                             backgroundColor={colors.offBlack}
                             color={colors.lightBlue[100]}
                             borderColor={colors.lightBlue[200]}
@@ -91,18 +135,63 @@ const CreatePositionCard = () => {
                     </Flex>
                     <Flex>
                         <Flex alignItems="center">
-                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Notional: </Text>
+                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Start: </Text>
                         </Flex>
                         <Input
                             type="date"
-                            placeholder="Notional must be a multiple of 10"
-                            value={notionalAmount}
-                            onChange={(e) => setNotionalAmount(e.target.value)}
+                            value={startDate ? new Date(startDate).toISOString().substring(0, 10) : ''}
+                            onChange={(e) => handleDateChange(e.target.value)}
                             backgroundColor={colors.offBlack}
                             color={colors.lightBlue[100]}
                             borderColor={colors.lightBlue[200]}
                             _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
                         />
+                    </Flex>
+                    <Flex>
+                        <Flex alignItems="center">
+                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Period: </Text>
+                        </Flex>
+                        <Select
+                            placeholder="Period Interval"
+                            value={periodInterval ?? ''}
+                            onChange={(e) => setPeriodInterval(e.target.value ? Number(e.target.value) : null)}
+                            backgroundColor={colors.offBlack}
+                            color={colors.lightBlue[100]}
+                            borderColor={colors.lightBlue[200]}
+                            _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
+                        >
+                            {periodOptions.map(option => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                        </Select>
+                    </Flex>
+                    <Flex>
+                        <Flex alignItems="center">
+                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Intervals: </Text>
+                        </Flex>
+                        <NumberInput
+                            value={totalIntervals}
+                            onChange={(valueString) => handleNumericChange(valueString, setTotalIntervals)}
+                            backgroundColor={colors.offBlack}
+                            color={colors.lightBlue[100]}
+                            borderColor={colors.lightBlue[200]}
+                            _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }} >
+                            <NumberInputField _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }} />
+                            <NumberInputStepper>
+                                <NumberIncrementStepper
+                                    backgroundColor={colors.offBlack}
+                                    color={colors.lightBlue[100]}
+                                    borderColor={colors.lightBlue[200]}
+                                    _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
+                                />
+                                <NumberDecrementStepper
+                                    backgroundColor={colors.offBlack}
+                                    color={colors.lightBlue[100]}
+                                    borderColor={colors.lightBlue[200]}
+                                    _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
+                                />
+                            </NumberInputStepper>
+                        </NumberInput>
                     </Flex>
                     <Flex align="center" onClick={() => setShowAdvanced(!showAdvanced)}>
                         <Text fontSize="xl" color={colors.lightBlue[100]} _hover={{ textDecoration: 'underline' }} cursor="pointer">
@@ -125,13 +214,17 @@ const CreatePositionCard = () => {
                             </Flex>
                             <Select
                                 placeholder="Select Yield"
+                                value={yieldId ?? ''}
+                                onChange={(e) => setYieldId(e.target.value ? Number(e.target.value) : null)}
                                 backgroundColor={colors.offBlack}
                                 color={colors.lightBlue[100]}
                                 borderColor={colors.lightBlue[200]}
                                 _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                                value={yieldId}
-                                onChange={(e) => setYieldId(e.target.value)}
-                            />
+                            >
+                                {yieldOptions.map(option => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
+                            </Select>
                         </Flex>
                     </Flex>
                 </Collapse>
@@ -153,8 +246,8 @@ const CreatePositionCard = () => {
                         Create
                     </Button>
                 </Flex>
-            </Flex>
-        </Flex>
+            </Flex >
+        </Flex >
     );
 };
 
