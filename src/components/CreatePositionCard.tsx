@@ -11,27 +11,29 @@ import { feedOptions, periodOptions, tokenOptions, yieldOptions } from './utils/
 
 const CreatePositionCard = () => {
     const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
-    const [contractCreationCount, setContractCreationCount] = useState<number>(0);
-    const [notionalAmount, setNotionalAmount] = useState<number>(0);
+    const [contractCreationCount, setContractCreationCount] = useState<number | null>(null);
+    const [notionalAmount, setNotionalAmount] = useState<number | null>(null);
     const [startDate, setStartDate] = useState<number>(0);
     const [feedIdA, setFeedIdA] = useState<number | null>(null);
     const [feedIdB, setFeedIdB] = useState<number | null>(null);
     const [periodInterval, setPeriodInterval] = useState<number | null>(null);
-    const [totalIntervals, setTotalIntervals] = useState<number>(0);
+    const [totalIntervals, setTotalIntervals] = useState<number | null>(1);
     const [settlementTokenId, setSettlementTokenId] = useState<number | null>(null);
     const [yieldId, setYieldId] = useState<number | null>(null);
 
-    const handleNumericChange = (value: string, setState: React.Dispatch<React.SetStateAction<number>>) => {
+    const handleNumericChange = (value: string, setState: React.Dispatch<React.SetStateAction<number | null>>) => {
         const numValue = Number(value);
-        console.log(numValue)
-        if (!isNaN(numValue)) {
+        if (!isNaN(numValue) && value.trim() !== '') {
             setState(numValue);
+        } else {
+            setState(null);
         }
-
-        console.log("priceFeedA", feedIdA);
-        console.log("priceFeedB", feedIdB);
-
     };
+
+    const handleInputNumericChange = (e: React.ChangeEvent<HTMLInputElement>, setState: React.Dispatch<React.SetStateAction<number | null>>) => {
+        handleNumericChange(e.target.value, setState);
+    };
+
 
     const handleDateChange = (dateStr: string) => {
         const date = new Date(dateStr + 'T00:00:00Z'); // Append 'T00:00:00Z' to set time to 00:00 UTC
@@ -125,8 +127,22 @@ const CreatePositionCard = () => {
                         </Flex>
                         <Input
                             placeholder="Notional must be a multiple of 10"
-                            value={notionalAmount}
-                            onChange={(e) => handleNumericChange(e.target.value, setNotionalAmount)}
+                            value={notionalAmount ? notionalAmount.toString() : ''}
+                            onChange={(e) => handleInputNumericChange(e, setNotionalAmount)}
+                            backgroundColor={colors.offBlack}
+                            color={colors.lightBlue[100]}
+                            borderColor={colors.lightBlue[200]}
+                            _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
+                        />
+                    </Flex>
+                    <Flex>
+                        <Flex alignItems="center">
+                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Contracts: </Text>
+                        </Flex>
+                        <Input
+                            placeholder="Number of Positions to Create"
+                            value={contractCreationCount ? contractCreationCount.toString() : ''}
+                            onChange={(e) => handleInputNumericChange(e, setContractCreationCount)}
                             backgroundColor={colors.offBlack}
                             color={colors.lightBlue[100]}
                             borderColor={colors.lightBlue[200]}
@@ -170,7 +186,8 @@ const CreatePositionCard = () => {
                             <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Intervals: </Text>
                         </Flex>
                         <NumberInput
-                            value={totalIntervals}
+                            value={totalIntervals ?? 1}
+                            min={1}
                             onChange={(valueString) => handleNumericChange(valueString, setTotalIntervals)}
                             backgroundColor={colors.offBlack}
                             color={colors.lightBlue[100]}
