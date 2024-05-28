@@ -3,32 +3,87 @@
         "inputs": [
             {
                 "internalType": "address",
-                "name": "_settledStableToken",
+                "name": "_priceFeedManager",
                 "type": "address"
             },
             {
                 "internalType": "address",
-                "name": "priceFeedsAddress",
+                "name": "_yieldStrategyManager",
                 "type": "address"
-            },
-            {
-                "internalType": "address",
-                "name": "YieldStrategiesAddress",
-                "type": "address"
-            },
-            {
-                "internalType": "uint8[]",
-                "name": "notionalIds",
-                "type": "uint8[]"
-            },
-            {
-                "internalType": "uint256[]",
-                "name": "notionalValues",
-                "type": "uint256[]"
             }
         ],
         "stateMutability": "nonpayable",
         "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "target",
+                "type": "address"
+            }
+        ],
+        "name": "AddressEmptyCode",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "AddressInsufficientBalance",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "timestamp",
+                "type": "uint256"
+            }
+        ],
+        "name": "CannotSettleUntil",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "FailedInnerCall",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "InactiveSwapContract",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "notionalAmount",
+                "type": "uint256"
+            }
+        ],
+        "name": "InvalidNotionalAmount",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "startDate",
+                "type": "uint256"
+            }
+        ],
+        "name": "InvalidStartDate",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "NoWinningsAvailable",
+        "type": "error"
     },
     {
         "inputs": [
@@ -53,109 +108,52 @@
         "type": "error"
     },
     {
-        "anonymous": false,
         "inputs": [
             {
-                "indexed": true,
                 "internalType": "address",
-                "name": "swaper",
+                "name": "token",
                 "type": "address"
-            },
+            }
+        ],
+        "name": "SafeERC20FailedOperation",
+        "type": "error"
+    },
+    {
+        "inputs": [
             {
-                "indexed": true,
-                "internalType": "address",
-                "name": "tokenAddress",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint64[]",
-                "name": "legIds",
-                "type": "uint64[]"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "totoalAmountOfSettleToken",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint8",
-                "name": "notionalCount",
+                "internalType": "enum CryptoSwap.Status",
+                "name": "status",
                 "type": "uint8"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "startDate",
-                "type": "uint256"
             }
         ],
-        "name": "BatchOpenSwap",
-        "type": "event"
+        "name": "StatusMustBeActive",
+        "type": "error"
     },
     {
-        "anonymous": false,
         "inputs": [
             {
-                "indexed": true,
-                "internalType": "uint256",
-                "name": "legId",
-                "type": "uint256"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "swaper",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "pairer",
-                "type": "address"
+                "internalType": "enum CryptoSwap.Status",
+                "name": "status",
+                "type": "uint8"
             }
         ],
-        "name": "NoProfitWhileSettle",
-        "type": "event"
+        "name": "StatusMustBeOpen",
+        "type": "error"
     },
     {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "uint64",
-                "name": "legId",
-                "type": "uint64"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "swaper",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "tokenAddress",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "amountOfSettleToken",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "startDate",
-                "type": "uint256"
-            }
-        ],
-        "name": "OpenSwap",
-        "type": "event"
+        "inputs": [],
+        "name": "TokenAlreadyExists",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "TokenDoesNotExist",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "UnauthorizedAccess",
+        "type": "error"
     },
     {
         "anonymous": false,
@@ -181,24 +179,31 @@
         "inputs": [
             {
                 "indexed": true,
-                "internalType": "uint256",
-                "name": "originalLegId",
-                "type": "uint256"
-            },
-            {
-                "indexed": true,
-                "internalType": "uint256",
-                "name": "pairlegId",
-                "type": "uint256"
+                "internalType": "uint8",
+                "name": "tokenId",
+                "type": "uint8"
             },
             {
                 "indexed": false,
                 "internalType": "address",
-                "name": "pairer",
+                "name": "tokenAddress",
                 "type": "address"
             }
         ],
-        "name": "PairSwap",
+        "name": "SettlementTokenAdded",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint8",
+                "name": "tokenId",
+                "type": "uint8"
+            }
+        ],
+        "name": "SettlementTokenRemoved",
         "type": "event"
     },
     {
@@ -207,61 +212,201 @@
             {
                 "indexed": true,
                 "internalType": "uint256",
-                "name": "legId",
+                "name": "contractMasterId",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "contractCreationCount",
                 "type": "uint256"
             },
             {
                 "indexed": true,
                 "internalType": "address",
-                "name": "winner",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "payToken",
+                "name": "userA",
                 "type": "address"
             },
             {
                 "indexed": false,
                 "internalType": "uint256",
-                "name": "profit",
+                "name": "notionalAmount",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint8",
+                "name": "settlementTokenId",
+                "type": "uint8"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint8",
+                "name": "yieldId",
+                "type": "uint8"
+            },
+            {
+                "indexed": false,
+                "internalType": "enum CryptoSwap.Status",
+                "name": "status",
+                "type": "uint8"
+            }
+        ],
+        "name": "SwapOpened",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "contractMasterId",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "contractId",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "userB",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "enum CryptoSwap.Status",
+                "name": "status",
+                "type": "uint8"
+            }
+        ],
+        "name": "SwapPaired",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "contractMasterId",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "contractId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "enum CryptoSwap.Status",
+                "name": "status",
+                "type": "uint8"
+            }
+        ],
+        "name": "SwapSettled",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "contractMasterId",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "contractId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "newBalanceA",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "newBalanceB",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "intervalCount",
                 "type": "uint256"
             }
         ],
-        "name": "SettleSwap",
+        "name": "SwapUpdated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "contractMasterId",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "contractId",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "WinningsWithdrawn",
         "type": "event"
     },
     {
         "inputs": [
             {
-                "internalType": "uint64",
-                "name": "legId",
-                "type": "uint64"
+                "internalType": "uint8",
+                "name": "_tokenId",
+                "type": "uint8"
+            },
+            {
+                "internalType": "address",
+                "name": "_tokenAddress",
+                "type": "address"
             }
         ],
-        "name": "getHistoryPerformance",
+        "name": "addSettlementToken",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "contractCreationCount",
         "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            },
-            {
-                "internalType": "uint64",
-                "name": "",
-                "type": "uint64"
-            },
-            {
-                "internalType": "uint64",
-                "name": "",
-                "type": "uint64"
-            },
-            {
-                "internalType": "int256",
-                "name": "",
-                "type": "int256"
-            },
             {
                 "internalType": "uint256",
                 "name": "",
@@ -274,60 +419,18 @@
     {
         "inputs": [
             {
-                "components": [
-                    {
-                        "internalType": "address",
-                        "name": "swaper",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "tokenAddress",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "notionalAmount",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint8",
-                        "name": "yieldId",
-                        "type": "uint8"
-                    },
-                    {
-                        "internalType": "int256",
-                        "name": "balance",
-                        "type": "int256"
-                    },
-                    {
-                        "internalType": "int256",
-                        "name": "benchPrice",
-                        "type": "int256"
-                    },
-                    {
-                        "internalType": "uint64",
-                        "name": "pairLegId",
-                        "type": "uint64"
-                    },
-                    {
-                        "internalType": "enum CryptoSwap.LegType",
-                        "name": "legType",
-                        "type": "uint8"
-                    }
-                ],
-                "internalType": "struct CryptoSwap.Leg",
-                "name": "leg",
-                "type": "tuple"
+                "internalType": "uint16",
+                "name": "_feedId",
+                "type": "uint16"
             },
             {
                 "internalType": "uint256",
-                "name": "startDate",
+                "name": "_startDate",
                 "type": "uint256"
             },
             {
                 "internalType": "uint256",
-                "name": "endDate",
+                "name": "_endDate",
                 "type": "uint256"
             }
         ],
@@ -335,12 +438,12 @@
         "outputs": [
             {
                 "internalType": "int256",
-                "name": "",
+                "name": "startPrice",
                 "type": "int256"
             },
             {
                 "internalType": "int256",
-                "name": "",
+                "name": "endPrice",
                 "type": "int256"
             }
         ],
@@ -350,17 +453,170 @@
     {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "owner",
-                "type": "address"
-            }
-        ],
-        "name": "legBalance",
-        "outputs": [
+                "internalType": "uint256",
+                "name": "masterId",
+                "type": "uint256"
+            },
             {
                 "internalType": "uint256",
-                "name": "",
+                "name": "contractId",
                 "type": "uint256"
+            }
+        ],
+        "name": "getSwapContract",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "uint256",
+                        "name": "contractMasterId",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "contractId",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "userA",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "userB",
+                        "type": "address"
+                    },
+                    {
+                        "components": [
+                            {
+                                "internalType": "uint64",
+                                "name": "startDate",
+                                "type": "uint64"
+                            },
+                            {
+                                "internalType": "uint32",
+                                "name": "periodInterval",
+                                "type": "uint32"
+                            },
+                            {
+                                "internalType": "uint16",
+                                "name": "totalIntervals",
+                                "type": "uint16"
+                            },
+                            {
+                                "internalType": "uint16",
+                                "name": "intervalCount",
+                                "type": "uint16"
+                            }
+                        ],
+                        "internalType": "struct CryptoSwap.Period",
+                        "name": "period",
+                        "type": "tuple"
+                    },
+                    {
+                        "components": [
+                            {
+                                "internalType": "bool",
+                                "name": "legPosition",
+                                "type": "bool"
+                            },
+                            {
+                                "internalType": "uint16",
+                                "name": "feedId",
+                                "type": "uint16"
+                            },
+                            {
+                                "internalType": "int256",
+                                "name": "originalPrice",
+                                "type": "int256"
+                            },
+                            {
+                                "internalType": "int256",
+                                "name": "lastPrice",
+                                "type": "int256"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "balance",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "withdrawable",
+                                "type": "uint256"
+                            }
+                        ],
+                        "internalType": "struct CryptoSwap.Leg",
+                        "name": "legA",
+                        "type": "tuple"
+                    },
+                    {
+                        "components": [
+                            {
+                                "internalType": "bool",
+                                "name": "legPosition",
+                                "type": "bool"
+                            },
+                            {
+                                "internalType": "uint16",
+                                "name": "feedId",
+                                "type": "uint16"
+                            },
+                            {
+                                "internalType": "int256",
+                                "name": "originalPrice",
+                                "type": "int256"
+                            },
+                            {
+                                "internalType": "int256",
+                                "name": "lastPrice",
+                                "type": "int256"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "balance",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "withdrawable",
+                                "type": "uint256"
+                            }
+                        ],
+                        "internalType": "struct CryptoSwap.Leg",
+                        "name": "legB",
+                        "type": "tuple"
+                    },
+                    {
+                        "internalType": "uint8",
+                        "name": "settlementTokenId",
+                        "type": "uint8"
+                    },
+                    {
+                        "internalType": "uint8",
+                        "name": "yieldId",
+                        "type": "uint8"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "notionalAmount",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "yieldShares",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "enum CryptoSwap.Status",
+                        "name": "status",
+                        "type": "uint8"
+                    }
+                ],
+                "internalType": "struct CryptoSwap.SwapContract",
+                "name": "",
+                "type": "tuple"
             }
         ],
         "stateMutability": "view",
@@ -369,153 +625,29 @@
     {
         "inputs": [
             {
-                "internalType": "uint64",
-                "name": "",
-                "type": "uint64"
-            }
-        ],
-        "name": "legIdShares",
-        "outputs": [
-            {
                 "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "owner",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "index",
-                "type": "uint256"
-            }
-        ],
-        "name": "legOfOwnerByIndex",
-        "outputs": [
-            {
-                "internalType": "uint64",
-                "name": "",
-                "type": "uint64"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "name": "legs",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "swaper",
-                "type": "address"
-            },
-            {
-                "internalType": "address",
-                "name": "tokenAddress",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "notionalAmount",
+                "name": "_contractCreationCount",
                 "type": "uint256"
             },
             {
-                "internalType": "uint8",
-                "name": "yieldId",
-                "type": "uint8"
-            },
-            {
-                "internalType": "int256",
-                "name": "balance",
-                "type": "int256"
-            },
-            {
-                "internalType": "int256",
-                "name": "benchPrice",
-                "type": "int256"
-            },
-            {
-                "internalType": "uint64",
-                "name": "pairLegId",
-                "type": "uint64"
-            },
-            {
-                "internalType": "enum CryptoSwap.LegType",
-                "name": "legType",
-                "type": "uint8"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "maxLegId",
-        "outputs": [
-            {
-                "internalType": "uint64",
-                "name": "",
-                "type": "uint64"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8",
-                "name": "",
-                "type": "uint8"
-            }
-        ],
-        "name": "notionalValueOptions",
-        "outputs": [
-            {
                 "internalType": "uint256",
-                "name": "",
+                "name": "_notionalAmount",
                 "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8",
-                "name": "notionalId",
-                "type": "uint8"
-            },
-            {
-                "internalType": "uint8",
-                "name": "notionalCount",
-                "type": "uint8"
-            },
-            {
-                "internalType": "address",
-                "name": "legToken",
-                "type": "address"
             },
             {
                 "internalType": "uint64",
                 "name": "_startDate",
                 "type": "uint64"
+            },
+            {
+                "internalType": "uint16",
+                "name": "_feedIdA",
+                "type": "uint16"
+            },
+            {
+                "internalType": "uint16",
+                "name": "_feedIdB",
+                "type": "uint16"
             },
             {
                 "internalType": "enum CryptoSwap.PeriodInterval",
@@ -529,7 +661,12 @@
             },
             {
                 "internalType": "uint8",
-                "name": "yieldId",
+                "name": "_settlementTokenId",
+                "type": "uint8"
+            },
+            {
+                "internalType": "uint8",
+                "name": "_yieldId",
                 "type": "uint8"
             }
         ],
@@ -554,24 +691,14 @@
     {
         "inputs": [
             {
-                "internalType": "uint64",
-                "name": "originalLegId",
-                "type": "uint64"
-            },
-            {
                 "internalType": "uint256",
-                "name": "notionalAmount",
+                "name": "_swapContractMasterId",
                 "type": "uint256"
             },
             {
-                "internalType": "address",
-                "name": "pairToken",
-                "type": "address"
-            },
-            {
-                "internalType": "uint8",
-                "name": "yieldId",
-                "type": "uint8"
+                "internalType": "uint256",
+                "name": "_swapContractId",
+                "type": "uint256"
             }
         ],
         "name": "pairSwap",
@@ -580,61 +707,13 @@
         "type": "function"
     },
     {
-        "inputs": [
-            {
-                "internalType": "uint64",
-                "name": "legId",
-                "type": "uint64"
-            }
-        ],
-        "name": "queryLeg",
+        "inputs": [],
+        "name": "priceFeedManager",
         "outputs": [
             {
-                "components": [
-                    {
-                        "internalType": "address",
-                        "name": "swaper",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "tokenAddress",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "notionalAmount",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint8",
-                        "name": "yieldId",
-                        "type": "uint8"
-                    },
-                    {
-                        "internalType": "int256",
-                        "name": "balance",
-                        "type": "int256"
-                    },
-                    {
-                        "internalType": "int256",
-                        "name": "benchPrice",
-                        "type": "int256"
-                    },
-                    {
-                        "internalType": "uint64",
-                        "name": "pairLegId",
-                        "type": "uint64"
-                    },
-                    {
-                        "internalType": "enum CryptoSwap.LegType",
-                        "name": "legType",
-                        "type": "uint8"
-                    }
-                ],
-                "internalType": "struct CryptoSwap.Leg",
+                "internalType": "contract IPriceFeedManager",
                 "name": "",
-                "type": "tuple"
+                "type": "address"
             }
         ],
         "stateMutability": "view",
@@ -643,47 +722,14 @@
     {
         "inputs": [
             {
-                "internalType": "uint64",
-                "name": "legId",
-                "type": "uint64"
+                "internalType": "uint8",
+                "name": "_tokenId",
+                "type": "uint8"
             }
         ],
-        "name": "querySwapDealInfo",
-        "outputs": [
-            {
-                "components": [
-                    {
-                        "internalType": "uint64",
-                        "name": "startDate",
-                        "type": "uint64"
-                    },
-                    {
-                        "internalType": "uint64",
-                        "name": "updateDate",
-                        "type": "uint64"
-                    },
-                    {
-                        "internalType": "uint32",
-                        "name": "periodInterval",
-                        "type": "uint32"
-                    },
-                    {
-                        "internalType": "uint8",
-                        "name": "totalIntervals",
-                        "type": "uint8"
-                    },
-                    {
-                        "internalType": "enum CryptoSwap.Status",
-                        "name": "status",
-                        "type": "uint8"
-                    }
-                ],
-                "internalType": "struct CryptoSwap.SwapDealInfo",
-                "name": "",
-                "type": "tuple"
-            }
-        ],
-        "stateMutability": "view",
+        "name": "removeSettlementToken",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
     },
     {
@@ -696,9 +742,14 @@
     {
         "inputs": [
             {
-                "internalType": "uint64",
-                "name": "legId",
-                "type": "uint64"
+                "internalType": "uint256",
+                "name": "_swapContractMasterId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_swapContractId",
+                "type": "uint256"
             }
         ],
         "name": "settleSwap",
@@ -709,50 +760,182 @@
     {
         "inputs": [
             {
-                "internalType": "uint64",
+                "internalType": "uint8",
                 "name": "",
-                "type": "uint64"
+                "type": "uint8"
             }
         ],
-        "name": "swapDealInfos",
+        "name": "settlementTokenAddresses",
         "outputs": [
             {
-                "internalType": "uint64",
-                "name": "startDate",
-                "type": "uint64"
-            },
-            {
-                "internalType": "uint64",
-                "name": "updateDate",
-                "type": "uint64"
-            },
-            {
-                "internalType": "uint32",
-                "name": "periodInterval",
-                "type": "uint32"
-            },
-            {
-                "internalType": "uint8",
-                "name": "totalIntervals",
-                "type": "uint8"
-            },
-            {
-                "internalType": "enum CryptoSwap.Status",
-                "name": "status",
-                "type": "uint8"
+                "internalType": "address",
+                "name": "",
+                "type": "address"
             }
         ],
         "stateMutability": "view",
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "totalSupply",
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "swapContracts",
         "outputs": [
             {
-                "internalType": "uint64",
-                "name": "",
-                "type": "uint64"
+                "internalType": "uint256",
+                "name": "contractMasterId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "contractId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "userA",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "userB",
+                "type": "address"
+            },
+            {
+                "components": [
+                    {
+                        "internalType": "uint64",
+                        "name": "startDate",
+                        "type": "uint64"
+                    },
+                    {
+                        "internalType": "uint32",
+                        "name": "periodInterval",
+                        "type": "uint32"
+                    },
+                    {
+                        "internalType": "uint16",
+                        "name": "totalIntervals",
+                        "type": "uint16"
+                    },
+                    {
+                        "internalType": "uint16",
+                        "name": "intervalCount",
+                        "type": "uint16"
+                    }
+                ],
+                "internalType": "struct CryptoSwap.Period",
+                "name": "period",
+                "type": "tuple"
+            },
+            {
+                "components": [
+                    {
+                        "internalType": "bool",
+                        "name": "legPosition",
+                        "type": "bool"
+                    },
+                    {
+                        "internalType": "uint16",
+                        "name": "feedId",
+                        "type": "uint16"
+                    },
+                    {
+                        "internalType": "int256",
+                        "name": "originalPrice",
+                        "type": "int256"
+                    },
+                    {
+                        "internalType": "int256",
+                        "name": "lastPrice",
+                        "type": "int256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "balance",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "withdrawable",
+                        "type": "uint256"
+                    }
+                ],
+                "internalType": "struct CryptoSwap.Leg",
+                "name": "legA",
+                "type": "tuple"
+            },
+            {
+                "components": [
+                    {
+                        "internalType": "bool",
+                        "name": "legPosition",
+                        "type": "bool"
+                    },
+                    {
+                        "internalType": "uint16",
+                        "name": "feedId",
+                        "type": "uint16"
+                    },
+                    {
+                        "internalType": "int256",
+                        "name": "originalPrice",
+                        "type": "int256"
+                    },
+                    {
+                        "internalType": "int256",
+                        "name": "lastPrice",
+                        "type": "int256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "balance",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "withdrawable",
+                        "type": "uint256"
+                    }
+                ],
+                "internalType": "struct CryptoSwap.Leg",
+                "name": "legB",
+                "type": "tuple"
+            },
+            {
+                "internalType": "uint8",
+                "name": "settlementTokenId",
+                "type": "uint8"
+            },
+            {
+                "internalType": "uint8",
+                "name": "yieldId",
+                "type": "uint8"
+            },
+            {
+                "internalType": "uint256",
+                "name": "notionalAmount",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "yieldShares",
+                "type": "uint256"
+            },
+            {
+                "internalType": "enum CryptoSwap.Status",
+                "name": "status",
+                "type": "uint8"
             }
         ],
         "stateMutability": "view",
@@ -775,45 +958,31 @@
         "inputs": [
             {
                 "internalType": "uint256",
-                "name": "amount",
+                "name": "_swapContractMasterId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_swapContractId",
                 "type": "uint256"
             }
         ],
-        "name": "withDrawUSDC",
+        "name": "withdrawWinnings",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
     },
     {
-        "inputs": [
-            {
-                "internalType": "uint64",
-                "name": "legId",
-                "type": "uint64"
-            }
-        ],
-        "name": "withdraw",
+        "inputs": [],
+        "name": "yieldStrategyManager",
         "outputs": [
             {
-                "internalType": "int256",
+                "internalType": "contract IYieldStrategyManager",
                 "name": "",
-                "type": "int256"
+                "type": "address"
             }
         ],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint64",
-                "name": "legId",
-                "type": "uint64"
-            }
-        ],
-        "name": "withdrawRouter",
-        "outputs": [],
-        "stateMutability": "nonpayable",
+        "stateMutability": "view",
         "type": "function"
     }
 ]

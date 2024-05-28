@@ -1,59 +1,46 @@
-import { useState } from 'react';
-
+import React, { useState } from 'react';
 import { Box, Flex, Text, Input, Select, Button, Collapse, Radio, RadioGroup, Stack } from '@chakra-ui/react';
 import { ArrowDownIcon, ArrowUpIcon } from '@chakra-ui/icons';
 
 import { colors } from './styles/colors';
-
 import contractConnection from '@/contract/contractConnection';
 import { addresses } from '@/contract/addresses';
 import cryptoSwapAbi from '@/contract/CryptoSwapAbi.json';
 
 const CreatePositionCard = () => {
     const [showAdvanced, setShowAdvanced] = useState(false);
-    const [currency, setCurrency] = useState('');
-    const [notional, setNotional] = useState('');
+    const [contractCreationCount, setContractCreationCount] = useState('');
+    const [notionalAmount, setNotionalAmount] = useState('');
     const [startDate, setStartDate] = useState('');
-    const [period, setPeriod] = useState("");
-    const [intervals, setIntervals] = useState<number | "">("");
-    const [amplifier, setAmplifier] = useState('');
-    const [fixDate, setFixDate] = useState('');
-    const [yieldValue, setYield] = useState('');  // "yield" is a reserved word in JavaScript
-    const [reserve, setReserve] = useState('');
+    const [feedIdA, setFeedIdA] = useState('');
+    const [feedIdB, setFeedIdB] = useState('');
+    const [periodType, setPeriodType] = useState('');
+    const [totalIntervals, setTotalIntervals] = useState('');
+    const [settlementTokenId, setSettlementTokenId] = useState('');
+    const [yieldId, setYieldId] = useState('');
 
-    const toggleAdvanced = () => {
-        setShowAdvanced(!showAdvanced);
-    }
+    const toggleAdvanced = () => setShowAdvanced(!showAdvanced);
 
-    const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setPeriod(e.target.value);
-    };
-
-    const handleIntervalsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setIntervals(value === "" ? "" : Number(value));
-    };
-
-    const handleCreatePosition = async () => {
-        const contract = await contractConnection({ address: addresses.arbitrum.cryptoSwap, abi: cryptoSwapAbi })
+    const handleOpenSwap = async () => {
+        const contract = await contractConnection({ address: addresses.arbitrum.contracts.cryptoSwap, abi: cryptoSwapAbi });
         if (!contract) {
             console.error("Contract not connected");
             return;
         }
 
-        const tx = await contract.createPosition(
-            currency,
-            notional,
+        const tx = await contract.openSwap(
+            contractCreationCount,
+            notionalAmount,
             startDate,
-            period,
-            intervals,
-            amplifier,
-            fixDate,
-            yieldValue,
-            reserve
+            feedIdA,
+            feedIdB,
+            periodType,
+            totalIntervals,
+            settlementTokenId,
+            yieldId
         );
         console.log("Transaction hash:", tx.hash);
-    }
+    };
 
     return (
         <Flex align="center" justify="center" bg={colors.offBlack} rounded="md" boxShadow="xl" p={8}>
@@ -61,11 +48,11 @@ const CreatePositionCard = () => {
                 <Flex direction="column" borderBottom="2px solid" borderColor={colors.lightBlue[200]} pb={2}>
                     <Flex gap={8} justifyContent="space-between">
                         <Flex>
-                            <Select placeholder="Leg A" variant="filled" bg={colors.offBlack} color={colors.offWhite} />
+                            <Select value={feedIdA} onChange={(e) => setFeedIdA(e.target.value)} placeholder="Leg A" variant="filled" bg={colors.offBlack} color={colors.offWhite} />
                         </Flex>
                         <Box width="2px" bg={colors.lightBlue[200]} height="40px" />
                         <Flex>
-                            <Select placeholder="Leg A" variant="filled" bg={colors.offBlack} color={colors.offWhite} />
+                            <Select value={feedIdB} onChange={(e) => setFeedIdB(e.target.value)} placeholder="Leg A" variant="filled" bg={colors.offBlack} color={colors.offWhite} />
                         </Flex>
                     </Flex>
                 </Flex>
@@ -79,13 +66,13 @@ const CreatePositionCard = () => {
                             <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Currency: </Text>
                         </Flex>
                         <Select
-                            placeholder="Currency"
+                            placeholder="Select Settlement Token"
+                            value={settlementTokenId}
+                            onChange={(e) => setSettlementTokenId(e.target.value)}
                             backgroundColor={colors.offBlack}
                             color={colors.lightBlue[100]}
                             borderColor={colors.lightBlue[200]}
                             _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                            value={currency}
-                            onChange={(e) => setCurrency(e.target.value)}
                         />
                     </Flex>
                     <Flex>
@@ -94,54 +81,27 @@ const CreatePositionCard = () => {
                         </Flex>
                         <Input
                             placeholder="Notional must be a multiple of 10"
-                            value={notional}
+                            value={notionalAmount}
+                            onChange={(e) => setNotionalAmount(e.target.value)}
                             backgroundColor={colors.offBlack}
                             color={colors.lightBlue[100]}
                             borderColor={colors.lightBlue[200]}
                             _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                            onChange={(e) => setNotional(e.target.value)}
                         />
                     </Flex>
                     <Flex>
                         <Flex alignItems="center">
-                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">Start Date: </Text>
+                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Notional: </Text>
                         </Flex>
                         <Input
-                            placeholder="Start Date"
+                            type="date"
+                            placeholder="Notional must be a multiple of 10"
+                            value={notionalAmount}
+                            onChange={(e) => setNotionalAmount(e.target.value)}
                             backgroundColor={colors.offBlack}
                             color={colors.lightBlue[100]}
                             borderColor={colors.lightBlue[200]}
                             _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                        />
-                    </Flex>
-                    <Flex>
-                        <Flex alignItems="center">
-                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">Period: </Text>
-                        </Flex>
-                        <RadioGroup onChange={setPeriod} value={period}>
-                            <Stack direction="row" color={colors.offWhite}>
-                                <Radio value="Weekly" colorScheme="white">Weekly</Radio>
-                                <Radio value="Monthly" colorScheme="white">Monthly</Radio>
-                                <Radio value="Monthly" colorScheme="white">Quarterly</Radio>
-                                <Radio value="Yearly" colorScheme="white">Yearly</Radio>
-                            </Stack>
-                        </RadioGroup>
-                    </Flex>
-                    <Flex>
-                        <Flex alignItems="center">
-                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">Intervals: </Text>
-                        </Flex>
-                        <Input
-                            type="number" // Set the type to number
-                            placeholder="The number of total period intervals"
-                            backgroundColor={colors.offBlack}
-                            color={colors.lightBlue[100]}
-                            borderColor={colors.lightBlue[200]}
-                            _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                            value={intervals}
-                            onChange={handleIntervalsChange}
                         />
                     </Flex>
                     <Flex align="center" onClick={() => setShowAdvanced(!showAdvanced)}>
@@ -161,57 +121,18 @@ const CreatePositionCard = () => {
                     <Flex direction="column" gap={4}>
                         <Flex>
                             <Flex alignItems="center">
-                                <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">Amplifier: </Text>
-                            </Flex>
-                            <Input
-                                placeholder="Amplifier"
-                                backgroundColor={colors.offBlack}
-                                color={colors.lightBlue[100]}
-                                borderColor={colors.lightBlue[200]}
-                                _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                                value={amplifier}
-                                onChange={(e) => setAmplifier(e.target.value)}
-                            />                        </Flex>
-                        <Flex>
-                            <Flex alignItems="center">
-                                <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">Fix Date: </Text>
-                            </Flex>
-                            <Input
-                                placeholder="Fix Date"
-                                backgroundColor={colors.offBlack}
-                                color={colors.lightBlue[100]}
-                                borderColor={colors.lightBlue[200]}
-                                _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                                value={fixDate}
-                                onChange={(e) => setFixDate(e.target.value)}
-                            />                        </Flex>
-                        <Flex>
-                            <Flex alignItems="center">
-                                <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Yield: </Text>
+                                <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">Yield: </Text>
                             </Flex>
                             <Select
-                                placeholder="Yield"
+                                placeholder="Select Yield"
                                 backgroundColor={colors.offBlack}
                                 color={colors.lightBlue[100]}
                                 borderColor={colors.lightBlue[200]}
                                 _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                                value={yieldValue}
-                                onChange={(e) => setYield(e.target.value)}
+                                value={yieldId}
+                                onChange={(e) => setYieldId(e.target.value)}
                             />
                         </Flex>
-                        <Flex>
-                            <Flex alignItems="center">
-                                <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">Reserve: </Text>
-                            </Flex>
-                            <Input
-                                placeholder="Reserve"
-                                backgroundColor={colors.offBlack}
-                                color={colors.lightBlue[100]}
-                                borderColor={colors.lightBlue[200]}
-                                _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                                value={reserve}
-                                onChange={(e) => setReserve(e.target.value)}
-                            />                        </Flex>
                     </Flex>
                 </Collapse>
 

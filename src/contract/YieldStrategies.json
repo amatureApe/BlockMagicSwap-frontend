@@ -1,22 +1,6 @@
 [
     {
-        "inputs": [
-            {
-                "internalType": "uint8[]",
-                "name": "yieldIds",
-                "type": "uint8[]"
-            },
-            {
-                "internalType": "address[]",
-                "name": "yieldAddress",
-                "type": "address[]"
-            },
-            {
-                "internalType": "address",
-                "name": "settledStableToken",
-                "type": "address"
-            }
-        ],
+        "inputs": [],
         "stateMutability": "nonpayable",
         "type": "constructor"
     },
@@ -65,12 +49,17 @@
         "inputs": [
             {
                 "internalType": "uint8",
-                "name": "yieldId",
+                "name": "_yieldId",
                 "type": "uint8"
             },
             {
                 "internalType": "address",
-                "name": "yieldAddress",
+                "name": "_yieldAddress",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_depositToken",
                 "type": "address"
             }
         ],
@@ -83,17 +72,17 @@
         "inputs": [
             {
                 "internalType": "uint8",
-                "name": "yieldId",
+                "name": "_yieldId",
                 "type": "uint8"
             },
             {
                 "internalType": "uint256",
-                "name": "amount",
+                "name": "_amount",
                 "type": "uint256"
             },
             {
                 "internalType": "address",
-                "name": "recipient",
+                "name": "_recipient",
                 "type": "address"
             }
         ],
@@ -101,7 +90,7 @@
         "outputs": [
             {
                 "internalType": "uint256",
-                "name": "",
+                "name": "shares",
                 "type": "uint256"
             }
         ],
@@ -112,16 +101,16 @@
         "inputs": [
             {
                 "internalType": "uint8",
-                "name": "_strategyId",
+                "name": "_yieldId",
                 "type": "uint8"
             }
         ],
         "name": "getYieldStrategy",
         "outputs": [
             {
-                "internalType": "address",
+                "internalType": "address[2]",
                 "name": "",
-                "type": "address"
+                "type": "address[2]"
             }
         ],
         "stateMutability": "view",
@@ -144,7 +133,7 @@
         "inputs": [
             {
                 "internalType": "uint8",
-                "name": "yieldId",
+                "name": "_yieldId",
                 "type": "uint8"
             }
         ],
@@ -177,17 +166,17 @@
         "inputs": [
             {
                 "internalType": "uint8",
-                "name": "yieldId",
+                "name": "_yieldId",
                 "type": "uint8"
             },
             {
                 "internalType": "uint256",
-                "name": "amount",
+                "name": "_amount",
                 "type": "uint256"
             },
             {
                 "internalType": "address",
-                "name": "recipient",
+                "name": "_recipient",
                 "type": "address"
             }
         ],
@@ -195,7 +184,7 @@
         "outputs": [
             {
                 "internalType": "uint256",
-                "name": "",
+                "name": "withdrawnAmount",
                 "type": "uint256"
             }
         ],
@@ -208,6 +197,11 @@
                 "internalType": "uint8",
                 "name": "",
                 "type": "uint8"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
             }
         ],
         "name": "yieldAddresses",
