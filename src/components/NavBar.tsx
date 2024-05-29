@@ -17,19 +17,32 @@ const NavBar = () => {
             <Box flex={1} p={4}
             >
                 <Stack spacing={6} >
-                    <Heading id="introduction" variant="underline" as='h1' size='4xl' noOfLines={1}>
-                        Panda Finance
+                    <Heading id="introduction" as='h1' size='4xl' noOfLines={1}>
+                        Introduction
                     </Heading>
-                    <Text as="b">Panda Finance</Text> <Text>
-                        brings traditional finance swaps to the blockchain. This exposes a wider range of assets, including
+                    <Heading id="introduction" as='h2' size='4xl' noOfLines={1}>
+                        What Panda Finance do?
+                    </Heading>
+                    <Text>
+                        <b>Panda Finance</b> brings traditional finance swaps to the blockchain. This exposes a wider range of assets, including
                         both crypto and traditional assets, making derivative tools more accessible to a broader audience and lowering the
                         barrier for many people to use these powerful financial instruments.
                     </Text>
                     <Heading as='h2' size='3xl' noOfLines={1}>
-                        (3xl) In love with React & Next
+                        What is a Swaps in Finance?
                     </Heading>
+                    <Text>
+                        Swaps in finance involve a contract between two or more parties on a derivative contract which involves an exchange
+                        of cash flow based on a predetermined notional principal amount, which usually includes interest rate swaps which is
+                        the exchange of floating rate interest with a fixed rate of interest and the currency swaps which is the exchange of
+                        fixed currency rate of one country with floating currency rate of another country etc.
+                    </Text>
+                    <Text>
+                        - reference: <Link href='https://www.wallstreetmojo.com/swaps-finance/'>swaps-finance</Link>
+                    </Text>
+
                     <Heading as='h2' size='2xl'>
-                        (2xl) In love with React & Next
+                        Advantages of Panda Finance
                     </Heading>
                     <Heading as='h2' size='xl'>
                         (xl) In love with React & Next
