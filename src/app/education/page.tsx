@@ -1,9 +1,11 @@
 'use client'
 import { Box, Text, Flex, useColorModeValue } from '@chakra-ui/react';
 import { colors } from '@/components/styles/colors';
+import NavBar from '../../components/NavBar';
+
 
 const EducationPage = () => {
-    const textColor = useColorModeValue(colors.offWhite, 'white');
+    // const textColor = useColorModeValue(colors.offWhite, 'white');
 
     return (
         <Flex
@@ -11,11 +13,12 @@ const EducationPage = () => {
             alignItems="center"
             justifyContent="center"
         >
-            <Box>
+            <NavBar />
+            {/* <Box ml="240px" flex="1">
                 <Text fontSize="4xl" color={textColor}>
                     Education Page Content
                 </Text>
-            </Box>
+            </Box> */}
         </Flex>
     );
 };

@@ -1,18 +1,11 @@
 import { extendTheme } from '@chakra-ui/react';
+import { colors } from '@/components/styles/colors';
+import { headingTheme } from '@/components/styles/Heading';
 
 const theme = extendTheme({
-    colors: {
-        darkBlue: '#364652',
-        offBlack: '#071108',
-        lightBlue: {
-            100: '#BBD1EA',
-            200: '#A1C6EA',
-        },
-        offWhite: '#E4E7EF',
-        brightGreen: '#55D45A',
-        softRed: '#D06167',
-    },
+    colors: colors,
     components: {
+        Heading: headingTheme,
         Button: {
             baseStyle: {
                 background: 'dark',

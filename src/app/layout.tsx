@@ -37,7 +37,7 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
             <Flex direction="column" minHeight="100vh" position="relative" bg={colors.darkGray}>
               <Box
                 className="transition pointer-events-none"
-                sx={{...glowDark, ...move}}
+                sx={{ ...glowDark, ...move }}
                 position={{ base: 'fixed' }}
                 aspectRatio={4 / 3}
                 height="50vh"
@@ -49,7 +49,7 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
               />
               <Box
                 className="transition pointer-events-none"
-                sx={{...glowDark, ...move}}
+                sx={{ ...glowDark, ...move }}
                 position={{ base: 'fixed' }}
                 aspectRatio={3 / 2}
                 height="50vh"
@@ -61,7 +61,7 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
               />
               <Box
                 className="transition pointer-events-none"
-                sx={{...glowDark, ...move}}
+                sx={{ ...glowDark, ...move }}
                 position={{ base: 'fixed' }}
                 aspectRatio={1 / 1}
                 height="45vh"
