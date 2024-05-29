@@ -1,59 +1,107 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { BigNumber, ethers } from 'ethers';
 
-import { Box, Flex, Text, Input, Select, Button, Collapse, Radio, RadioGroup, Stack } from '@chakra-ui/react';
+import { Box, Flex, Text, Input, Select, Button, Collapse, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper } from '@chakra-ui/react';
 import { ArrowDownIcon, ArrowUpIcon } from '@chakra-ui/icons';
 
 import { colors } from './styles/colors';
-
 import contractConnection from '@/contract/contractConnection';
 import { addresses } from '@/contract/addresses';
 import cryptoSwapAbi from '@/contract/CryptoSwapAbi.json';
+import { feedOptions, periodOptions, tokenOptions, yieldOptions } from './utils/selectOptions';
+
 
 const CreatePositionCard = () => {
-    const [showAdvanced, setShowAdvanced] = useState(false);
-    const [currency, setCurrency] = useState('');
-    const [notional, setNotional] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [period, setPeriod] = useState("");
-    const [intervals, setIntervals] = useState<number | "">("");
-    const [amplifier, setAmplifier] = useState('');
-    const [fixDate, setFixDate] = useState('');
-    const [yieldValue, setYield] = useState('');  // "yield" is a reserved word in JavaScript
-    const [reserve, setReserve] = useState('');
+    const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    const toggleAdvanced = () => {
-        setShowAdvanced(!showAdvanced);
-    }
+    // contract state
+    const [contractCreationCount, setContractCreationCount] = useState<number | null>(null);
+    const [notionalAmount, setNotionalAmount] = useState<number | null>(null);
+    const [startDate, setStartDate] = useState<number>(0);
+    const [feedIdA, setFeedIdA] = useState<number | null>(null);
+    const [feedIdB, setFeedIdB] = useState<number | null>(null);
+    const [periodInterval, setPeriodInterval] = useState<number | null>(null);
+    const [totalIntervals, setTotalIntervals] = useState<number | null>(1);
+    const [settlementTokenId, setSettlementTokenId] = useState<number | null>(null);
+    const [yieldId, setYieldId] = useState<number | null>(null);
 
-    const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setPeriod(e.target.value);
+    const handleNumericChange = (value: string, setState: React.Dispatch<React.SetStateAction<number | null>>) => {
+        const numValue = Number(value);
+        if (!isNaN(numValue) && value.trim() !== '') {
+            setState(numValue);
+        } else {
+            setState(null);
+        }
     };
 
-    const handleIntervalsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setIntervals(value === "" ? "" : Number(value));
+    // Ensure that inputs are numbers before converting
+    const handleInputNumericChange = (e: React.ChangeEvent<HTMLInputElement>, setState: React.Dispatch<React.SetStateAction<number | null>>) => {
+        const value = e.target.value.trim();
+        if (value === "") {
+            setState(null);
+        } else {
+            const numValue = Number(value);
+            if (!isNaN(numValue)) {
+                setState(numValue);
+            }
+        }
     };
 
-    const handleCreatePosition = async () => {
-        const contract = await contractConnection({ address: addresses.arbitrum.cryptoSwap, abi: cryptoSwapAbi })
+    const handleDateChange = (dateStr: string) => {
+        const date = new Date(dateStr + 'T00:00:00Z'); // Append 'T00:00:00Z' to set time to 00:00 UTC
+        setStartDate(date.getTime()); // Convert the date to a timestamp and update state
+    };
+
+    const handleOpenSwap = async () => {
+        setError("");
+        setIsLoading(true);
+        const contract = await contractConnection({
+            address: addresses.arbitrum.contracts.cryptoSwap,
+            abi: cryptoSwapAbi
+        });
+
+        console.log(
+            contractCreationCount,
+            notionalAmount,
+            startDate,
+            feedIdA,
+            feedIdB,
+            periodInterval,
+            totalIntervals,
+            settlementTokenId,
+            yieldId
+        )
+
         if (!contract) {
-            console.error("Contract not connected");
+            setError("Contract not connected");
+            setIsLoading(false);
             return;
         }
 
-        const tx = await contract.createPosition(
-            currency,
-            notional,
-            startDate,
-            period,
-            intervals,
-            amplifier,
-            fixDate,
-            yieldValue,
-            reserve
-        );
-        console.log("Transaction hash:", tx.hash);
-    }
+        try {
+            const tx = await contract.openSwap(
+                BigNumber.from(contractCreationCount),
+                BigNumber.from(notionalAmount),
+                BigNumber.from(startDate),
+                BigNumber.from(feedIdA),
+                BigNumber.from(feedIdB),
+                BigNumber.from(periodInterval),
+                BigNumber.from(totalIntervals),
+                BigNumber.from(settlementTokenId),
+                BigNumber.from(yieldId)
+            );
+            console.log("Transaction hash:", tx.hash);
+            await tx.wait();
+            console.log("Transaction confirmed");
+        } catch (err) {
+            console.error("Transaction error:", err);
+            setError("Transaction failed: " + (err instanceof Error ? err.message : String(err)));
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <Flex align="center" justify="center" bg={colors.offBlack} rounded="md" boxShadow="xl" p={8}>
@@ -61,11 +109,34 @@ const CreatePositionCard = () => {
                 <Flex direction="column" borderBottom="2px solid" borderColor={colors.lightBlue[200]} pb={2}>
                     <Flex gap={8} justifyContent="space-between">
                         <Flex>
-                            <Select placeholder="Leg A" variant="filled" bg={colors.offBlack} color={colors.offWhite} />
-                        </Flex>
+                            <Select
+                                placeholder="Leg A"
+                                value={feedIdA ?? ''}
+                                onChange={(e) => setFeedIdA(e.target.value ? Number(e.target.value) : null)}
+                                backgroundColor={colors.offBlack}
+                                color={colors.lightBlue[100]}
+                                borderColor={colors.lightBlue[200]}
+                                _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
+                            >
+                                {feedOptions.map(option => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
+                            </Select>                        </Flex>
                         <Box width="2px" bg={colors.lightBlue[200]} height="40px" />
                         <Flex>
-                            <Select placeholder="Leg A" variant="filled" bg={colors.offBlack} color={colors.offWhite} />
+                            <Select
+                                placeholder="Leg B"
+                                value={feedIdB ?? ''}
+                                onChange={(e) => setFeedIdB(e.target.value ? Number(e.target.value) : null)}
+                                backgroundColor={colors.offBlack}
+                                color={colors.lightBlue[100]}
+                                borderColor={colors.lightBlue[200]}
+                                _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
+                            >
+                                {feedOptions.map(option => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
+                            </Select>
                         </Flex>
                     </Flex>
                 </Flex>
@@ -79,14 +150,18 @@ const CreatePositionCard = () => {
                             <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Currency: </Text>
                         </Flex>
                         <Select
-                            placeholder="Currency"
+                            placeholder="Settlement Token"
+                            value={settlementTokenId ?? ''}
+                            onChange={(e) => setSettlementTokenId(e.target.value ? Number(e.target.value) : null)}
                             backgroundColor={colors.offBlack}
                             color={colors.lightBlue[100]}
                             borderColor={colors.lightBlue[200]}
                             _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                            value={currency}
-                            onChange={(e) => setCurrency(e.target.value)}
-                        />
+                        >
+                            {tokenOptions.map(option => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                        </Select>
                     </Flex>
                     <Flex>
                         <Flex alignItems="center">
@@ -94,55 +169,88 @@ const CreatePositionCard = () => {
                         </Flex>
                         <Input
                             placeholder="Notional must be a multiple of 10"
-                            value={notional}
+                            value={notionalAmount ? notionalAmount.toString() : ''}
+                            onChange={(e) => handleInputNumericChange(e, setNotionalAmount)}
                             backgroundColor={colors.offBlack}
                             color={colors.lightBlue[100]}
                             borderColor={colors.lightBlue[200]}
                             _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                            onChange={(e) => setNotional(e.target.value)}
                         />
                     </Flex>
                     <Flex>
                         <Flex alignItems="center">
-                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">Start Date: </Text>
+                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Contracts: </Text>
                         </Flex>
                         <Input
-                            placeholder="Start Date"
+                            placeholder="Number of Positions to Create"
+                            value={contractCreationCount ? contractCreationCount.toString() : ''}
+                            onChange={(e) => handleInputNumericChange(e, setContractCreationCount)}
                             backgroundColor={colors.offBlack}
                             color={colors.lightBlue[100]}
                             borderColor={colors.lightBlue[200]}
                             _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
                         />
                     </Flex>
                     <Flex>
                         <Flex alignItems="center">
-                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">Period: </Text>
-                        </Flex>
-                        <RadioGroup onChange={setPeriod} value={period}>
-                            <Stack direction="row" color={colors.offWhite}>
-                                <Radio value="Weekly" colorScheme="white">Weekly</Radio>
-                                <Radio value="Monthly" colorScheme="white">Monthly</Radio>
-                                <Radio value="Monthly" colorScheme="white">Quarterly</Radio>
-                                <Radio value="Yearly" colorScheme="white">Yearly</Radio>
-                            </Stack>
-                        </RadioGroup>
-                    </Flex>
-                    <Flex>
-                        <Flex alignItems="center">
-                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">Intervals: </Text>
+                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Start: </Text>
                         </Flex>
                         <Input
-                            type="number" // Set the type to number
-                            placeholder="The number of total period intervals"
+                            type="date"
+                            value={startDate ? new Date(startDate).toISOString().substring(0, 10) : ''}
+                            onChange={(e) => handleDateChange(e.target.value)}
                             backgroundColor={colors.offBlack}
                             color={colors.lightBlue[100]}
                             borderColor={colors.lightBlue[200]}
                             _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                            value={intervals}
-                            onChange={handleIntervalsChange}
                         />
+                    </Flex>
+                    <Flex>
+                        <Flex alignItems="center">
+                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Period: </Text>
+                        </Flex>
+                        <Select
+                            placeholder="Period Interval"
+                            value={periodInterval ?? ''}
+                            onChange={(e) => setPeriodInterval(e.target.value ? Number(e.target.value) : null)}
+                            backgroundColor={colors.offBlack}
+                            color={colors.lightBlue[100]}
+                            borderColor={colors.lightBlue[200]}
+                            _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
+                        >
+                            {periodOptions.map(option => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                        </Select>
+                    </Flex>
+                    <Flex>
+                        <Flex alignItems="center">
+                            <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Intervals: </Text>
+                        </Flex>
+                        <NumberInput
+                            value={totalIntervals ?? 1}
+                            min={1}
+                            onChange={(valueString) => handleNumericChange(valueString, setTotalIntervals)}
+                            backgroundColor={colors.offBlack}
+                            color={colors.lightBlue[100]}
+                            borderColor={colors.lightBlue[200]}
+                            _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }} >
+                            <NumberInputField _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }} />
+                            <NumberInputStepper>
+                                <NumberIncrementStepper
+                                    backgroundColor={colors.offBlack}
+                                    color={colors.lightBlue[100]}
+                                    borderColor={colors.lightBlue[200]}
+                                    _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
+                                />
+                                <NumberDecrementStepper
+                                    backgroundColor={colors.offBlack}
+                                    color={colors.lightBlue[100]}
+                                    borderColor={colors.lightBlue[200]}
+                                    _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
+                                />
+                            </NumberInputStepper>
+                        </NumberInput>
                     </Flex>
                     <Flex align="center" onClick={() => setShowAdvanced(!showAdvanced)}>
                         <Text fontSize="xl" color={colors.lightBlue[100]} _hover={{ textDecoration: 'underline' }} cursor="pointer">
@@ -161,57 +269,22 @@ const CreatePositionCard = () => {
                     <Flex direction="column" gap={4}>
                         <Flex>
                             <Flex alignItems="center">
-                                <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">Amplifier: </Text>
-                            </Flex>
-                            <Input
-                                placeholder="Amplifier"
-                                backgroundColor={colors.offBlack}
-                                color={colors.lightBlue[100]}
-                                borderColor={colors.lightBlue[200]}
-                                _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                                value={amplifier}
-                                onChange={(e) => setAmplifier(e.target.value)}
-                            />                        </Flex>
-                        <Flex>
-                            <Flex alignItems="center">
-                                <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">Fix Date: </Text>
-                            </Flex>
-                            <Input
-                                placeholder="Fix Date"
-                                backgroundColor={colors.offBlack}
-                                color={colors.lightBlue[100]}
-                                borderColor={colors.lightBlue[200]}
-                                _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                                value={fixDate}
-                                onChange={(e) => setFixDate(e.target.value)}
-                            />                        </Flex>
-                        <Flex>
-                            <Flex alignItems="center">
-                                <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Yield: </Text>
+                                <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">Yield: </Text>
                             </Flex>
                             <Select
-                                placeholder="Yield"
+                                placeholder="Select Yield"
+                                value={yieldId ?? ''}
+                                onChange={(e) => setYieldId(e.target.value ? Number(e.target.value) : null)}
                                 backgroundColor={colors.offBlack}
                                 color={colors.lightBlue[100]}
                                 borderColor={colors.lightBlue[200]}
                                 _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                                value={yieldValue}
-                                onChange={(e) => setYield(e.target.value)}
-                            />
+                            >
+                                {yieldOptions.map(option => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
+                            </Select>
                         </Flex>
-                        <Flex>
-                            <Flex alignItems="center">
-                                <Text fontSize="lg" color={colors.offWhite} as="b" mr={4} whiteSpace="nowrap">Reserve: </Text>
-                            </Flex>
-                            <Input
-                                placeholder="Reserve"
-                                backgroundColor={colors.offBlack}
-                                color={colors.lightBlue[100]}
-                                borderColor={colors.lightBlue[200]}
-                                _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                                value={reserve}
-                                onChange={(e) => setReserve(e.target.value)}
-                            />                        </Flex>
                     </Flex>
                 </Collapse>
 
@@ -223,6 +296,7 @@ const CreatePositionCard = () => {
                 </Text>
                 <Flex justifyContent="center">
                     <Button
+                        onClick={handleOpenSwap}
                         w={150}
                         mt={4}
                         backgroundColor={colors.lightBlue[200]}
@@ -232,8 +306,8 @@ const CreatePositionCard = () => {
                         Create
                     </Button>
                 </Flex>
-            </Flex>
-        </Flex>
+            </Flex >
+        </Flex >
     );
 };
 

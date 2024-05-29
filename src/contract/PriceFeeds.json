@@ -1,19 +1,30 @@
 [
     {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "_tokenAddress",
-                "type": "address"
-            },
-            {
-                "internalType": "address",
-                "name": "_priceFeed",
-                "type": "address"
-            }
-        ],
+        "inputs": [],
         "stateMutability": "nonpayable",
         "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint16",
+                "name": "feedId",
+                "type": "uint16"
+            }
+        ],
+        "name": "FeedAlreadyExists",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint16",
+                "name": "feedId",
+                "type": "uint16"
+            }
+        ],
+        "name": "FeedDoesNotExist",
+        "type": "error"
     },
     {
         "inputs": [
@@ -38,6 +49,11 @@
         "type": "error"
     },
     {
+        "inputs": [],
+        "name": "Unauthorized",
+        "type": "error"
+    },
+    {
         "anonymous": false,
         "inputs": [
             {
@@ -57,11 +73,62 @@
         "type": "event"
     },
     {
+        "anonymous": false,
         "inputs": [
             {
+                "indexed": true,
+                "internalType": "uint16",
+                "name": "feedId",
+                "type": "uint16"
+            },
+            {
+                "indexed": true,
                 "internalType": "address",
-                "name": "tokenAddress",
+                "name": "feedAddress",
                 "type": "address"
+            }
+        ],
+        "name": "PriceFeedAdded",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint16",
+                "name": "feedId",
+                "type": "uint16"
+            }
+        ],
+        "name": "PriceFeedRemoved",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint16",
+                "name": "feedId",
+                "type": "uint16"
+            },
+            {
+                "indexed": false,
+                "internalType": "int256",
+                "name": "price",
+                "type": "int256"
+            }
+        ],
+        "name": "PriceQueried",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint16",
+                "name": "_feedId",
+                "type": "uint16"
             },
             {
                 "internalType": "address",
@@ -111,12 +178,7 @@
         "outputs": [
             {
                 "internalType": "uint80",
-                "name": "targetRoundL",
-                "type": "uint80"
-            },
-            {
-                "internalType": "uint80",
-                "name": "targetRoundR",
+                "name": "targetRound",
                 "type": "uint80"
             }
         ],
@@ -126,9 +188,28 @@
     {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "tokenAddress",
-                "type": "address"
+                "internalType": "int32[]",
+                "name": "data",
+                "type": "int32[]"
+            }
+        ],
+        "name": "calculatePriceAverage",
+        "outputs": [
+            {
+                "internalType": "int32",
+                "name": "",
+                "type": "int32"
+            }
+        ],
+        "stateMutability": "pure",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint16",
+                "name": "_feedId",
+                "type": "uint16"
             }
         ],
         "name": "description",
@@ -145,56 +226,32 @@
     {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "feedAddress",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "targetTimestamp",
-                "type": "uint256"
-            }
-        ],
-        "name": "fetchPriceDataForFeed",
-        "outputs": [
-            {
-                "internalType": "int32",
-                "name": "",
-                "type": "int32"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
                 "internalType": "contract AggregatorV2V3Interface",
                 "name": "feed",
                 "type": "address"
             },
             {
                 "internalType": "uint256",
-                "name": "targetTimestamp",
+                "name": "fromTimestamp",
                 "type": "uint256"
             },
             {
                 "internalType": "uint80",
-                "name": "roundId1",
+                "name": "daysToFetch",
                 "type": "uint80"
             },
             {
-                "internalType": "uint80",
-                "name": "roundId2",
-                "type": "uint80"
+                "internalType": "uint256",
+                "name": "dataPointsToFetchPerDay",
+                "type": "uint256"
             }
         ],
-        "name": "getClosestPrice",
+        "name": "fetchPriceData",
         "outputs": [
             {
-                "internalType": "int256",
-                "name": "price",
-                "type": "int256"
+                "internalType": "int32[]",
+                "name": "",
+                "type": "int32[]"
             }
         ],
         "stateMutability": "view",
@@ -204,8 +261,42 @@
         "inputs": [
             {
                 "internalType": "address",
-                "name": "tokenAddress",
+                "name": "feedAddress",
                 "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "fromTimestamp",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint80",
+                "name": "daysToFetch",
+                "type": "uint80"
+            },
+            {
+                "internalType": "uint256",
+                "name": "dataPointsToFetchPerDay",
+                "type": "uint256"
+            }
+        ],
+        "name": "fetchPriceDataForFeed",
+        "outputs": [
+            {
+                "internalType": "int32[]",
+                "name": "",
+                "type": "int32[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint16",
+                "name": "_feedId",
+                "type": "uint16"
             },
             {
                 "internalType": "uint256",
@@ -227,9 +318,9 @@
     {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "tokenAddress",
-                "type": "address"
+                "internalType": "uint16",
+                "name": "_feedId",
+                "type": "uint16"
             }
         ],
         "name": "getLatestPrice",
@@ -240,7 +331,7 @@
                 "type": "int256"
             }
         ],
-        "stateMutability": "view",
+        "stateMutability": "nonpayable",
         "type": "function"
     },
     {
@@ -280,25 +371,6 @@
     {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "tokenAddress",
-                "type": "address"
-            }
-        ],
-        "name": "getPriceFeed",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
                 "internalType": "contract AggregatorV2V3Interface",
                 "name": "feed",
                 "type": "address"
@@ -307,6 +379,11 @@
                 "internalType": "uint256",
                 "name": "fromTime",
                 "type": "uint256"
+            },
+            {
+                "internalType": "uint80",
+                "name": "daysToFetch",
+                "type": "uint80"
             }
         ],
         "name": "guessSearchRoundsForTimestamp",
@@ -341,9 +418,28 @@
     {
         "inputs": [
             {
+                "internalType": "uint16",
+                "name": "",
+                "type": "uint16"
+            }
+        ],
+        "name": "priceFeedAddresses",
+        "outputs": [
+            {
                 "internalType": "address",
-                "name": "tokenAddress",
+                "name": "",
                 "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint16",
+                "name": "_feedId",
+                "type": "uint16"
             }
         ],
         "name": "priceFeedDecimals",
@@ -358,10 +454,57 @@
         "type": "function"
     },
     {
+        "inputs": [
+            {
+                "internalType": "uint16",
+                "name": "_feedId",
+                "type": "uint16"
+            }
+        ],
+        "name": "removePriceFeed",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
         "inputs": [],
         "name": "renounceOwnership",
         "outputs": [],
         "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "contract AggregatorV2V3Interface",
+                "name": "feed",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "fromTimestamp",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint80",
+                "name": "daysToFetch",
+                "type": "uint80"
+            },
+            {
+                "internalType": "uint256",
+                "name": "dataPointsToFetchPerDay",
+                "type": "uint256"
+            }
+        ],
+        "name": "roundIdsToSearch",
+        "outputs": [
+            {
+                "internalType": "uint80[]",
+                "name": "",
+                "type": "uint80[]"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     },
     {
