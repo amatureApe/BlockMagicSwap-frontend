@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { BigNumber, ethers } from 'ethers';
+
 import { Box, Flex, Text, Input, Select, Button, Collapse, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper } from '@chakra-ui/react';
 import { ArrowDownIcon, ArrowUpIcon } from '@chakra-ui/icons';
 
@@ -11,6 +13,10 @@ import { feedOptions, periodOptions, tokenOptions, yieldOptions } from './utils/
 
 const CreatePositionCard = () => {
     const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
+
+    // contract state
     const [contractCreationCount, setContractCreationCount] = useState<number | null>(null);
     const [notionalAmount, setNotionalAmount] = useState<number | null>(null);
     const [startDate, setStartDate] = useState<number>(0);
@@ -30,10 +36,18 @@ const CreatePositionCard = () => {
         }
     };
 
+    // Ensure that inputs are numbers before converting
     const handleInputNumericChange = (e: React.ChangeEvent<HTMLInputElement>, setState: React.Dispatch<React.SetStateAction<number | null>>) => {
-        handleNumericChange(e.target.value, setState);
+        const value = e.target.value.trim();
+        if (value === "") {
+            setState(null);
+        } else {
+            const numValue = Number(value);
+            if (!isNaN(numValue)) {
+                setState(numValue);
+            }
+        }
     };
-
 
     const handleDateChange = (dateStr: string) => {
         const date = new Date(dateStr + 'T00:00:00Z'); // Append 'T00:00:00Z' to set time to 00:00 UTC
@@ -41,13 +55,14 @@ const CreatePositionCard = () => {
     };
 
     const handleOpenSwap = async () => {
-        const contract = await contractConnection({ address: addresses.arbitrum.contracts.cryptoSwap, abi: cryptoSwapAbi });
-        if (!contract) {
-            console.error("Contract not connected");
-            return;
-        }
+        setError("");
+        setIsLoading(true);
+        const contract = await contractConnection({
+            address: addresses.arbitrum.contracts.cryptoSwap,
+            abi: cryptoSwapAbi
+        });
 
-        const tx = await contract.openSwap(
+        console.log(
             contractCreationCount,
             notionalAmount,
             startDate,
@@ -57,8 +72,35 @@ const CreatePositionCard = () => {
             totalIntervals,
             settlementTokenId,
             yieldId
-        );
-        console.log("Transaction hash:", tx.hash);
+        )
+
+        if (!contract) {
+            setError("Contract not connected");
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const tx = await contract.openSwap(
+                BigNumber.from(contractCreationCount),
+                BigNumber.from(notionalAmount),
+                BigNumber.from(startDate),
+                BigNumber.from(feedIdA),
+                BigNumber.from(feedIdB),
+                BigNumber.from(periodInterval),
+                BigNumber.from(totalIntervals),
+                BigNumber.from(settlementTokenId),
+                BigNumber.from(yieldId)
+            );
+            console.log("Transaction hash:", tx.hash);
+            await tx.wait();
+            console.log("Transaction confirmed");
+        } catch (err) {
+            console.error("Transaction error:", err);
+            setError("Transaction failed: " + (err instanceof Error ? err.message : String(err)));
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -254,6 +296,7 @@ const CreatePositionCard = () => {
                 </Text>
                 <Flex justifyContent="center">
                     <Button
+                        onClick={handleOpenSwap}
                         w={150}
                         mt={4}
                         backgroundColor={colors.lightBlue[200]}
