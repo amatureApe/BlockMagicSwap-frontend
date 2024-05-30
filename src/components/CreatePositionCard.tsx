@@ -225,15 +225,30 @@ const CreatePositionCard = () => {
                         <Flex alignItems="center">
                             <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Contracts: </Text>
                         </Flex>
-                        <Input
-                            placeholder="Number of Positions to Create"
-                            value={contractCreationCount ? contractCreationCount.toString() : ''}
-                            onChange={(e) => handleInputNumericChange(e, setContractCreationCount)}
+                        <NumberInput
+                            value={contractCreationCount ?? 1}
+                            min={1}
+                            onChange={(valueString) => handleNumericChange(valueString, setContractCreationCount)}
                             backgroundColor={colors.offBlack}
                             color={colors.lightBlue[100]}
                             borderColor={colors.lightBlue[200]}
-                            _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
-                        />
+                            _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }} >
+                            <NumberInputField _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }} />
+                            <NumberInputStepper>
+                                <NumberIncrementStepper
+                                    backgroundColor={colors.offBlack}
+                                    color={colors.lightBlue[100]}
+                                    borderColor={colors.lightBlue[200]}
+                                    _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
+                                />
+                                <NumberDecrementStepper
+                                    backgroundColor={colors.offBlack}
+                                    color={colors.lightBlue[100]}
+                                    borderColor={colors.lightBlue[200]}
+                                    _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
+                                />
+                            </NumberInputStepper>
+                        </NumberInput>
                     </Flex>
                     <Flex>
                         <Flex alignItems="center">
