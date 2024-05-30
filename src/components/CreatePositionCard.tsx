@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BigNumber, ethers } from 'ethers';
 
-import { Box, Flex, Text, Input, Select, Button, Collapse, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper } from '@chakra-ui/react';
+import { Box, Flex, Text, Input, Select, Button, Collapse, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper, Alert, AlertTitle, AlertDescription, useToast } from '@chakra-ui/react';
 import { ArrowDownIcon, ArrowUpIcon } from '@chakra-ui/icons';
 
 import { colors } from './styles/colors';
@@ -10,6 +10,7 @@ import { addresses } from '@/contract/addresses';
 import cryptoSwapAbi from '@/contract/CryptoSwapAbi.json';
 import { feedOptions, periodOptions, tokenOptions, yieldOptions } from './utils/selectOptions';
 
+const formatDate = (timestamp: number) => new Date(timestamp).toLocaleDateString();
 
 const CreatePositionCard = () => {
     const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
@@ -25,7 +26,9 @@ const CreatePositionCard = () => {
     const [periodInterval, setPeriodInterval] = useState<number | null>(null);
     const [totalIntervals, setTotalIntervals] = useState<number | null>(1);
     const [settlementTokenId, setSettlementTokenId] = useState<number | null>(null);
-    const [yieldId, setYieldId] = useState<number | null>(null);
+    const [yieldId, setYieldId] = useState<number | null>(0);
+
+    const toast = useToast();
 
     const handleNumericChange = (value: string, setState: React.Dispatch<React.SetStateAction<number | null>>) => {
         const numValue = Number(value);
@@ -102,6 +105,47 @@ const CreatePositionCard = () => {
             setIsLoading(false);
         }
     };
+
+    const checkFieldsAndOpenSwap = async () => {
+        const isValidInput = (value: any): boolean => value !== null && value !== undefined;
+
+        if (!isValidInput(contractCreationCount) || !isValidInput(notionalAmount) || !isValidInput(startDate) ||
+            !isValidInput(feedIdA) || !isValidInput(feedIdB) || !isValidInput(periodInterval) ||
+            !isValidInput(totalIntervals) || !isValidInput(settlementTokenId)) {
+
+            toast({
+                title: "Error",
+                description: "Please ensure all fields are filled correctly before creating the position.",
+                status: "error",
+                duration: 9000,
+                isClosable: true,
+                position: "top",
+            });
+            return;
+        }
+        await handleOpenSwap();
+    };
+
+
+
+    const summaryText = () => {
+        let baseText = `This position involves creating ${contractCreationCount || 'a specified number of'} contract(s) for a synthetic equity swap between ${feedOptions.find(o => o.value === feedIdA)?.label || 'Leg A'}  \n 
+        and ${feedOptions.find(o => o.value === feedIdB)?.label || 'Leg B'}, starting on ${startDate ? formatDate(startDate) : 'your selected date'}. The settlement token is ${tokenOptions.find(o => o.value === settlementTokenId)?.label || 'your chosen currency'}, \n
+        with a notional value of ${notionalAmount || 'specified amount'}. The swap occurs over ${Number(totalIntervals) > 1 ? totalIntervals : 'a number of'} ${periodOptions.find(o => o.value === periodInterval)?.label.toLowerCase() || 'your selected period'} intervals. `;
+
+        if (totalIntervals && periodInterval) {
+            baseText += ` This means that your position will end in ${totalIntervals} ${periodOptions.find(o => o.value === periodInterval)?.label.toLowerCase().slice(0, -2) + '(s)'}, updating the position and distributing winnings at the end of each interval.`;
+        }
+
+        if (yieldId) {
+            baseText += ` your position may also return yield based on ${yieldOptions.find(o => o.value === yieldId)?.label}'s performance.`;
+        }
+
+        baseText += ` Please review the details and click 'Create' to open the position. For more information please refer to our documentation.`;
+
+        return baseText;
+    };
+
 
     return (
         <Flex align="center" justify="center" bg={colors.offBlack} rounded="md" boxShadow="xl" p={8}>
@@ -288,24 +332,27 @@ const CreatePositionCard = () => {
                     </Flex>
                 </Collapse>
 
-                <Flex justifyContent="center">
-                    <Text fontSize="md" color={colors.lightBlue[200]}>Summary</Text>
+                <Flex direction="column" gap={4}>
+                    <Flex justifyContent="center">
+                        <Text fontSize="md" color={colors.lightBlue[200]}>Summary</Text>
+                    </Flex>
+                    <Text fontSize="md" color="white" w={500}>
+                        {summaryText()}
+                    </Text>
+                    <Flex justifyContent="center">
+                        <Button
+                            onClick={checkFieldsAndOpenSwap}
+                            w={150}
+                            mt={4}
+                            backgroundColor={colors.lightBlue[200]}
+                            color={colors.offBlack}
+                            _hover={{ bg: colors.lightBlue[100] }}
+                        >
+                            Create
+                        </Button>
+                    </Flex>
                 </Flex>
-                <Text fontSize="sm" color="white">
-                    This position is a synthetic equity swap between Leg A and Leg B...
-                </Text>
-                <Flex justifyContent="center">
-                    <Button
-                        onClick={handleOpenSwap}
-                        w={150}
-                        mt={4}
-                        backgroundColor={colors.lightBlue[200]}
-                        color={colors.offBlack}
-                        _hover={{ bg: colors.lightBlue[100] }}
-                    >
-                        Create
-                    </Button>
-                </Flex>
+
             </Flex >
         </Flex >
     );
