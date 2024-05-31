@@ -7,7 +7,7 @@ import { ArrowDownIcon, ArrowUpIcon } from '@chakra-ui/icons';
 import { colors } from './styles/colors';
 import contractConnection from '@/contract/contractConnection';
 import { addresses } from '@/contract/addresses';
-import cryptoSwapAbi from '@/contract/CryptoSwapAbi.json';
+import cryptoSwapAbi from '@/contract/abis/CryptoSwap.json';
 import { feedOptions, periodOptions, tokenOptions, yieldOptions } from './utils/selectOptions';
 
 const formatDate = (timestamp: number) => new Date(timestamp).toLocaleDateString();
