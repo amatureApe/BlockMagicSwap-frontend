@@ -4,7 +4,7 @@ import CreatePositionCard from '@/components/CreatePositionCard';
 
 import { colors } from '@/components/styles/colors';
 
-const CreatePage = () => {
+const CreatePage: React.FC = () => {
 
     return (
         <Flex

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { AccountContext } from '@/app/layout';
 import { BigNumber, ethers } from 'ethers';
 
 import { Box, Flex, Text, Input, Select, Button, Collapse, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper, Alert, AlertTitle, AlertDescription, useToast } from '@chakra-ui/react';
@@ -6,19 +7,22 @@ import { ArrowDownIcon, ArrowUpIcon } from '@chakra-ui/icons';
 
 import { colors } from './styles/colors';
 import contractConnection from '@/contract/contractConnection';
+import { checkApproval, approve } from '@/contract/checkApproval';
 import { addresses } from '@/contract/addresses';
 import cryptoSwapAbi from '@/contract/abis/CryptoSwap.json';
 import { feedOptions, periodOptions, tokenOptions, yieldOptions } from './utils/selectOptions';
 
 const formatDate = (timestamp: number) => new Date(timestamp).toLocaleDateString();
 
-const CreatePositionCard = () => {
+const CreatePositionCard: React.FC = () => {
+    const { account } = useContext(AccountContext);
+
     const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
     // contract state
-    const [contractCreationCount, setContractCreationCount] = useState<number | null>(null);
+    const [contractCreationCount, setContractCreationCount] = useState<number | null>(1);
     const [notionalAmount, setNotionalAmount] = useState<number | null>(null);
     const [startDate, setStartDate] = useState<number>(0);
     const [feedIdA, setFeedIdA] = useState<number | null>(null);
@@ -57,56 +61,7 @@ const CreatePositionCard = () => {
         setStartDate(date.getTime()); // Convert the date to a timestamp and update state
     };
 
-    const handleOpenSwap = async () => {
-        setError("");
-        setIsLoading(true);
-        const contract = await contractConnection({
-            address: addresses.arbitrum.contracts.cryptoSwap,
-            abi: cryptoSwapAbi
-        });
-
-        console.log(
-            contractCreationCount,
-            notionalAmount,
-            startDate,
-            feedIdA,
-            feedIdB,
-            periodInterval,
-            totalIntervals,
-            settlementTokenId,
-            yieldId
-        )
-
-        if (!contract) {
-            setError("Contract not connected");
-            setIsLoading(false);
-            return;
-        }
-
-        try {
-            const tx = await contract.openSwap(
-                BigNumber.from(contractCreationCount),
-                BigNumber.from(notionalAmount),
-                BigNumber.from(startDate),
-                BigNumber.from(feedIdA),
-                BigNumber.from(feedIdB),
-                BigNumber.from(periodInterval),
-                BigNumber.from(totalIntervals),
-                BigNumber.from(settlementTokenId),
-                BigNumber.from(yieldId)
-            );
-            console.log("Transaction hash:", tx.hash);
-            await tx.wait();
-            console.log("Transaction confirmed");
-        } catch (err) {
-            console.error("Transaction error:", err);
-            setError("Transaction failed: " + (err instanceof Error ? err.message : String(err)));
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const checkFieldsAndOpenSwap = async () => {
+    const checkFields = () => {
         const isValidInput = (value: any): boolean => value !== null && value !== undefined;
 
         if (!isValidInput(contractCreationCount) || !isValidInput(notionalAmount) || !isValidInput(startDate) ||
@@ -121,11 +76,85 @@ const CreatePositionCard = () => {
                 isClosable: true,
                 position: "top",
             });
-            return;
+            return false;
         }
-        await handleOpenSwap();
+        return true;
     };
 
+
+    const handleOpenSwap = async () => {
+        const fieldsAreValid = checkFields();
+        if (!fieldsAreValid) return;
+
+        setError("");
+        setIsLoading(true);
+
+        // Assume settlementTokenAddress is available or derived from settlementTokenId
+        const settlementTokenAddress = tokenOptions.find(o => o.value === settlementTokenId)?.address;
+        const spenderAddress = addresses.arbitrum.contracts.cryptoSwap;
+
+        console.log(contractCreationCount, notionalAmount, startDate, feedIdA, feedIdB, periodInterval, totalIntervals, settlementTokenId, yieldId)
+
+        try {
+            // Check if the user has already approved the settlement token for the contract
+            if (settlementTokenAddress !== undefined && account !== null && notionalAmount !== null) {
+                const isApproved = await checkApproval(settlementTokenAddress, spenderAddress, account, notionalAmount);
+                if (!isApproved) {
+
+                    toast({
+                        title: "Approval Required",
+                        description: "Please approve the token to continue with creating the swap.",
+                        status: "info",
+                        duration: 5000,
+                        isClosable: true,
+                        position: "top",  // You can specify the position as well depending on your layout preferences
+                    });
+                    // If not approved, ask for approval
+
+                    await approve(settlementTokenAddress, spenderAddress);
+
+                    toast({
+                        title: "Approval Successful",
+                        description: "Token has been approved for the contract.",
+                        status: "success",
+                        duration: 5000,
+                        isClosable: true,
+                        position: "top",
+                    });
+                }
+            }
+
+            // After approval, proceed to create the swap
+            const contract = await contractConnection({
+                address: addresses.arbitrum.contracts.cryptoSwap,
+                abi: cryptoSwapAbi
+            });
+
+            if (contract) {
+                const tx = await contract.openSwap(
+                    BigNumber.from(contractCreationCount),
+                    BigNumber.from(notionalAmount),
+                    BigNumber.from(startDate),
+                    BigNumber.from(feedIdA),
+                    BigNumber.from(feedIdB),
+                    BigNumber.from(periodInterval),
+                    BigNumber.from(totalIntervals),
+                    BigNumber.from(settlementTokenId),
+                    BigNumber.from(yieldId)
+                );
+                console.log("Transaction hash:", tx.hash);
+                await tx.wait();
+                console.log("Transaction confirmed");
+            } else {
+                throw new Error("Contract not connected");
+            }
+        } catch (err) {
+            console.error("Error during transaction:", err);
+            setError("Transaction failed: " + (err instanceof Error ? err.message : String(err)));
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
 
     const summaryText = () => {
@@ -356,7 +385,7 @@ const CreatePositionCard = () => {
                     </Text>
                     <Flex justifyContent="center">
                         <Button
-                            onClick={checkFieldsAndOpenSwap}
+                            onClick={handleOpenSwap}
                             w={150}
                             mt={4}
                             backgroundColor={colors.lightBlue[200]}
