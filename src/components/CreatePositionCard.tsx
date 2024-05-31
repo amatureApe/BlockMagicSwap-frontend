@@ -89,11 +89,8 @@ const CreatePositionCard: React.FC = () => {
         setError("");
         setIsLoading(true);
 
-        // Assume settlementTokenAddress is available or derived from settlementTokenId
         const settlementTokenAddress = tokenOptions.find(o => o.value === settlementTokenId)?.address;
         const spenderAddress = addresses.arbitrum.contracts.cryptoSwap;
-
-        console.log(contractCreationCount, notionalAmount, startDate, feedIdA, feedIdB, periodInterval, totalIntervals, settlementTokenId, yieldId)
 
         try {
             // Check if the user has already approved the settlement token for the contract
@@ -107,10 +104,10 @@ const CreatePositionCard: React.FC = () => {
                         status: "info",
                         duration: 5000,
                         isClosable: true,
-                        position: "top",  // You can specify the position as well depending on your layout preferences
+                        position: "top",
                     });
-                    // If not approved, ask for approval
 
+                    // If not approved, ask for approval
                     await approve(settlementTokenAddress, spenderAddress);
 
                     toast({
@@ -396,7 +393,6 @@ const CreatePositionCard: React.FC = () => {
                         </Button>
                     </Flex>
                 </Flex>
-
             </Flex >
         </Flex >
     );

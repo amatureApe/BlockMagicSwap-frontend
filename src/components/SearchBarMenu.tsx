@@ -6,7 +6,6 @@ const SearchBarMenu = () => {
 
     return (
         <Flex align="center" justify="center" p={2} borderBottomWidth="2px">
-            {/* Left Buttons */}
             <ButtonGroup mr={4} variant="ghost">
                 <Button w={20} bgColor="none"> <Text color={colors.lightBlue[200]}>All</Text></Button>
                 <Button w={20} bgColor="none"> <Text color={colors.lightBlue[200]}>Open</Text></Button>
@@ -14,10 +13,8 @@ const SearchBarMenu = () => {
                 <Button w={20} bgColor="none"> <Text color={colors.lightBlue[200]}>Settled</Text></Button>
             </ButtonGroup>
 
-            {/* Search Input */}
             <Input placeholder="Search" width="xl" />
 
-            {/* Right Buttons and Switch */}
             <Flex ml={4} align="center">
                 <Button mr={2} px={10} backgroundColor={colors.lightBlue[200]} color={colors.offBlack}>Filters</Button>
                 <FormControl display="flex" alignItems="center">
