@@ -5,13 +5,13 @@ interface ContractConnectionParams {
     abi: any[];
 }
 
-const ARBITRUM_NETWORK_ID = 42161; // Network ID for Arbitrum One mainnet
+const ARBITRUM_NETWORK_ID = 42161;
 
 const contractConnection = async ({ address, abi }: ContractConnectionParams): Promise<ethers.Contract | undefined> => {
     if (window.ethereum) {
         try {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
-            await provider.send("eth_requestAccounts", []); // Request account access
+            await provider.send("eth_requestAccounts", []);
             const network = await provider.getNetwork();
 
             if (network.chainId !== ARBITRUM_NETWORK_ID) {

@@ -5,8 +5,13 @@ import { Flex, Box, Text, Button, Link, useColorModeValue } from '@chakra-ui/rea
 import { colors } from './styles/colors';
 import { useWallet } from '@/context/WalletConnect';
 
-const Header: React.FC = () => {
-    const { account, setAccount } = useWallet();
+type HeaderProps = {
+    account: string | null;
+    setAccount: React.Dispatch<React.SetStateAction<string | null>>;
+};
+
+
+const Header: React.FC<HeaderProps> = ({ account, setAccount }) => {
 
     const connectAccount = async () => {
         if (window.ethereum) {

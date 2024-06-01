@@ -4,14 +4,15 @@ import CreatePositionCard from '@/components/CreatePositionCard';
 
 import { colors } from '@/components/styles/colors';
 
-const CreatePage = () => {
+const CreatePage: React.FC = () => {
 
     return (
         <Flex
-            height="100vh"
+            minH="100vh"
             alignItems="flex-start"
             justifyContent="center"
             pt="10vh"
+            pb="10vh"
         >
             <Flex direction="column" align="center">
                 <Text fontSize="5xl" fontWeight="bold" color={colors.lightBlue[100]} mb={4}>Create Position</Text>
