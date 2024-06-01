@@ -58,7 +58,7 @@ const CreatePositionCard: React.FC = () => {
 
     const handleDateChange = (dateStr: string) => {
         const date = new Date(dateStr + 'T00:00:00Z'); // Append 'T00:00:00Z' to set time to 00:00 UTC
-        setStartDate(date.getTime() / 1000); // Convert the date to a timestamp and update state
+        setStartDate(date.getTime()); // Convert the date to a timestamp and update state
     };
 
     const checkFields = () => {
@@ -133,7 +133,7 @@ const CreatePositionCard: React.FC = () => {
                 const tx = await contract.openSwap(
                     BigNumber.from(contractCreationCount),
                     BigNumber.from(notionalAmount),
-                    BigNumber.from(startDate),
+                    BigNumber.from(startDate / 1000),
                     BigNumber.from(feedIdA),
                     BigNumber.from(feedIdB),
                     BigNumber.from(periodInterval),
