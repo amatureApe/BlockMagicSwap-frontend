@@ -8,12 +8,11 @@ import { WalletProvider } from '@/context/WalletConnect';
 import Footer from '@/components/Footer';
 import { Flex, Box, useColorModeValue, AspectRatio } from '@chakra-ui/react';
 import { colors } from '@/components/styles/colors';
+import { AccountContext } from '@/context/AccountContext';
 
 interface RootLayoutProps {
   children: React.ReactNode;
 }
-
-export const AccountContext = React.createContext<{ account: string | null; setAccount: React.Dispatch<React.SetStateAction<string | null>>; }>({ account: null, setAccount: () => { } });
 
 const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   const [account, setAccount] = useState<string | null>(null);

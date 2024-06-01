@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from 'react';
-import { AccountContext } from '@/app/layout';
+import { AccountContext } from '@/context/AccountContext';
 import cryptoSwapAbi from '@/contract/abis/CryptoSwap.json';
 import { addresses } from '@/contract/addresses';
 import contractConnection from '@/contract/contractConnection';
