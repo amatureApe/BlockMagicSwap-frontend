@@ -1,40 +1,9 @@
-// hooks/useSwapContracts.ts
 import { useEffect, useState, useContext } from 'react';
 import { AccountContext } from '@/app/layout';
 import cryptoSwapAbi from '@/contract/abis/CryptoSwap.json';
 import { addresses } from '@/contract/addresses';
 import contractConnection from '@/contract/contractConnection';
-
-interface Leg {
-    legPosition: boolean;
-    feedId: number;
-    originalPrice: string;
-    lastPrice: string;
-    balance: number;
-    withdrawable: number;
-}
-
-interface Period {
-    startDate: number;
-    periodInterval: number;
-    totalIntervals: number;
-    intervalCount: number;
-}
-
-interface SwapContract {
-    contractMasterId: number;
-    contractId: number;
-    userA: string;
-    userB: string;
-    period: Period;
-    legA: Leg;
-    legB: Leg;
-    settlementTokenId: number;
-    yieldId: number;
-    notionalAmount: number;
-    yieldShares: number;
-    status: 'OPEN' | 'ACTIVE' | 'SETTLED' | 'CANCELLED';
-}
+import { SwapContract } from '@/contract/interfaces/SwapContract';
 
 export const useSwapContracts = () => {
     const { account } = useContext(AccountContext);
