@@ -12,6 +12,11 @@ const theme = extendTheme({
                 color: 'customDeepGreen',
             }
         },
+        Text: {
+            baseStyle: {
+                color: colors.lightBlue[100],
+            }
+        },
     },
 });
 

@@ -2,7 +2,7 @@ import { defineStyle, defineStyleConfig } from "@chakra-ui/styled-system"
 import { colors } from './colors'
 
 const brandPrimary = defineStyle({
-    color: colors.lightBlue[100],
+    color: colors.lightBlue[200],
     _dark: {
         color: colors.lightBlue[200],
     }
