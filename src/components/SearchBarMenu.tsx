@@ -4,9 +4,11 @@ import { colors } from './styles/colors';
 
 interface SearchMenuProps {
     setStatus: (status: string | null) => void;
+    setMyPosition: (myPosition: boolean) => void;
+    myPosition: boolean;
 }
 
-const SearchBarMenu: React.FC<SearchMenuProps> = ({ setStatus }) => {
+const SearchBarMenu: React.FC<SearchMenuProps> = ({ setStatus, setMyPosition, myPosition }) => {
 
     return (
         <Flex align="center" justify="center" p={2} borderBottomWidth="2px">
@@ -30,10 +32,10 @@ const SearchBarMenu: React.FC<SearchMenuProps> = ({ setStatus }) => {
             <Flex ml={4} align="center">
                 <Button mr={2} px={10} backgroundColor={colors.lightBlue[200]} color={colors.offBlack}>Filters</Button>
                 <FormControl display="flex" alignItems="center">
-                    <FormLabel htmlFor="market-view-switch" mb="0" ml={2}>
+                    <FormLabel htmlFor="market-view-switch" mb="0" ml={2} color={colors.offWhite}>
                         View
                     </FormLabel>
-                    <Switch id="market-view-switch" colorScheme='blue' />
+                    <Switch id="market-view-switch" colorScheme='blue' onChange={() => setMyPosition(!myPosition)} />
                 </FormControl>
             </Flex>
         </Flex>

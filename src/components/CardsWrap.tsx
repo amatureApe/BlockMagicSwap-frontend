@@ -17,6 +17,7 @@ import cryptoSwapAbi from '@/contract/abis/CryptoSwap.json';
 interface CardsWrapProps {
     contracts: SwapContract[];
     status: string | null;
+    myPosition: boolean;
 }
 
 const getStatusProps = (status: string) => {
@@ -122,63 +123,63 @@ const handlePairSwap = async (contract: SwapContract, account: string) => {
 }
 
 
-const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status }) => {
+const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status, myPosition }) => {
     const { account } = useContext(AccountContext);
 
     return (
         <Flex flexWrap="wrap" ml={24}>
-            {contracts.map((contract, index) => (
-                (status === null || contract.status.toString() === status) && (
-                    <Box key={index} p={4} shadow="md" backgroundColor={colors.offBlack} borderWidth="1px" borderRadius="lg" m={2} width="300px">
-                        <Flex justifyContent="space-between">
-                            <Text color={colors.offWhite} fontSize="xl" fontWeight="bold">{getFeedLabel(contract.legA.feedId)}</Text>
-                            <Badge colorScheme={getStatusProps(contract.status.toString()).colorScheme} mb={3}>
-                                {getStatusProps(contract.status.toString()).label}
-                            </Badge>
-                            <Text color={colors.offWhite} fontSize="xl" fontWeight="bold">{getFeedLabel(contract.legB.feedId)}</Text>
-                        </Flex>
-                        <Divider mb={2} />
+            {contracts.filter(contract =>
+                (!myPosition || contract.userA.toLowerCase() === account) &&
+                (status === null || contract.status.toString() === status)
+            ).map((contract, index) => (
+                <Box key={index} p={4} shadow="md" backgroundColor={colors.offBlack} borderWidth="1px" borderRadius="lg" m={2} width="300px">
+                    <Flex justifyContent="space-between">
+                        <Text color={colors.offWhite} fontSize="xl" fontWeight="bold">{getFeedLabel(contract.legA.feedId)}</Text>
+                        <Badge colorScheme={getStatusProps(contract.status.toString()).colorScheme} mb={3}>
+                            {getStatusProps(contract.status.toString()).label}
+                        </Badge>
+                        <Text color={colors.offWhite} fontSize="xl" fontWeight="bold">{getFeedLabel(contract.legB.feedId)}</Text>
+                    </Flex>
+                    <Divider mb={2} />
 
-                        <Flex justify="space-between">
-                            <Tooltip label={contract.userA} aria-label="Full address">
-                                <Text color={colors.lightBlue[200]} mt={1}><strong>User A:</strong> {formatAddress(contract.userA)}</Text>
-                            </Tooltip>
-                            <Tooltip label={contract.userB} aria-label="Full address">
-                                <Text color={colors.lightBlue[200]} mt={1}><strong>User B:</strong> {formatAddress(contract.userB)}</Text>
-                            </Tooltip>
-                        </Flex>
+                    <Flex justify="space-between">
+                        <Tooltip label={contract.userA} aria-label="Full address">
+                            <Text color={colors.lightBlue[200]} mt={1}><strong>User A:</strong> {formatAddress(contract.userA)}</Text>
+                        </Tooltip>
+                        <Tooltip label={contract.userB} aria-label="Full address">
+                            <Text color={colors.lightBlue[200]} mt={1}><strong>User B:</strong> {formatAddress(contract.userB)}</Text>
+                        </Tooltip>
+                    </Flex>
 
-                        <Divider my={2} />
+                    <Divider my={2} />
 
-                        <Text color={colors.lightBlue[200]} mt={1}><strong>Notional:</strong> {contract.notionalAmount.toLocaleString()}
-                            <Tooltip label={getTokenAddress(contract.settlementTokenId)}>
-                                <span>{' '}{getTokenLabel(contract.settlementTokenId)}</span>
-                            </Tooltip>
-                        </Text>
+                    <Text color={colors.lightBlue[200]} mt={1}><strong>Notional:</strong> {contract.notionalAmount.toLocaleString()}
+                        <Tooltip label={getTokenAddress(contract.settlementTokenId)}>
+                            <span>{' '}{getTokenLabel(contract.settlementTokenId)}</span>
+                        </Tooltip>
+                    </Text>
 
-                        <Divider my={2} />
+                    <Divider my={2} />
 
-                        <Text color={colors.lightBlue[200]} mt={1}><strong>Start Date:</strong> {formatDate(contract.period.startDate).toString()}</Text>
-                        <Text color={colors.lightBlue[200]} mt={1}><strong>End Date:</strong> {getEndDate(contract.period.startDate, contract.period.periodInterval, contract.period.totalIntervals)}</Text>
-                        <Text color={colors.lightBlue[200]} mt={1}>
-                            <strong>Interval: </strong>
-                            <Tooltip label={`Total Intervals: ${contract.period.totalIntervals}`}>
-                                <span>Every {contract.period.periodInterval / 86400} day(s)</span>
-                            </Tooltip>
-                        </Text>
+                    <Text color={colors.lightBlue[200]} mt={1}><strong>Start Date:</strong> {formatDate(contract.period.startDate).toString()}</Text>
+                    <Text color={colors.lightBlue[200]} mt={1}><strong>End Date:</strong> {getEndDate(contract.period.startDate, contract.period.periodInterval, contract.period.totalIntervals)}</Text>
+                    <Text color={colors.lightBlue[200]} mt={1}>
+                        <strong>Interval: </strong>
+                        <Tooltip label={`Total Intervals: ${contract.period.totalIntervals}`}>
+                            <span>Every {contract.period.periodInterval / 86400} day(s)</span>
+                        </Tooltip>
+                    </Text>
 
-                        <Divider my={2} />
+                    <Divider my={2} />
 
-                        <Text color={colors.lightBlue[200]} mt={1}><strong>Yield:</strong> {getYieldLabel(contract.yieldId)}</Text>
+                    <Text color={colors.lightBlue[200]} mt={1}><strong>Yield:</strong> {getYieldLabel(contract.yieldId)}</Text>
 
-                        <Divider my={2} />
+                    <Divider my={2} />
 
-                        <Flex justifyContent="center">
-                            {renderStatusButton(contract, account as string)}
-                        </Flex>
-
-                    </Box>
-                )
+                    <Flex justifyContent="center">
+                        {renderStatusButton(contract, account as string)}
+                    </Flex>
+                </Box>
             ))}
         </Flex >
     );

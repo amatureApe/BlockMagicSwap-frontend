@@ -28,7 +28,7 @@ const Header: React.FC<HeaderProps> = ({ account, setAccount }) => {
         }
     };
 
-    const bgColor = useColorModeValue(`#000000BB`, '#000000CC'); // Use hexadecimal color with transparency
+    const bgColor = useColorModeValue(`#000000BB`, '#000000CC');
 
 
     return (
@@ -46,12 +46,12 @@ const Header: React.FC<HeaderProps> = ({ account, setAccount }) => {
                 <Link href="/create">
                     <Text fontSize="lg" fontWeight="bold">Create</Text>
                 </Link>
-                <Link href="/dashboard">
+                {/* <Link href="/dashboard">
                     <Text fontSize="lg" fontWeight="bold">Dashboard</Text>
                 </Link>
                 <Link href="/staking">
                     <Text fontSize="lg" fontWeight="bold">Staking</Text>
-                </Link>
+                </Link> */}
             </Flex>
             <Box>
                 {account ? (
@@ -63,7 +63,7 @@ const Header: React.FC<HeaderProps> = ({ account, setAccount }) => {
                         </Button>
                     </Flex>
                 ) : (
-                    <Button colorScheme="teal" onClick={connectAccount}>
+                    <Button bgColor={colors.lightBlue[200]} color={colors.offBlack} onClick={connectAccount}>
                         Connect Wallet
                     </Button>
                 )}

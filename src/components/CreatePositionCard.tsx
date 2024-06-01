@@ -133,7 +133,7 @@ const CreatePositionCard: React.FC = () => {
                 const tx = await contract.openSwap(
                     BigNumber.from(contractCreationCount),
                     BigNumber.from(notionalAmount),
-                    BigNumber.from(startDate / 1000),
+                    BigNumber.from(startDate / 1000), // convert from milliseconds to timestamp
                     BigNumber.from(feedIdA),
                     BigNumber.from(feedIdB),
                     BigNumber.from(periodInterval),
