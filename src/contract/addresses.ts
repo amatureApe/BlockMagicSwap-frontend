@@ -1,7 +1,7 @@
 export const addresses = {
     arbitrum: {
         contracts: {
-            cryptoSwap: "0xDCc560f514c6920c5a7590C8E6719777311335Ed",
+            cryptoSwap: "0x60299BCad6F56DFC0232ccE758514f02d2dA5f6a",
             yieldStrategyManager: "0x6f376c17Cc423194205Fe74633A746526A53A4Df",
             priceFeedManager: "0x08751fAC1dA7D063daF6a2a6B5D6770F2f5517f7",
         },
