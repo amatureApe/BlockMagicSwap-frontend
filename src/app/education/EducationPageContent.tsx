@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heading, Stack, Text, VStack, Link, OrderedList, ListItem, UnorderedList, ListIcon, List } from '@chakra-ui/react';
+import { Heading, Stack, Text, VStack, Link, OrderedList, ListItem, UnorderedList, ListIcon, List, Box } from '@chakra-ui/react';
 import { ChevronRightIcon } from '@chakra-ui/icons'
 import Note from '@/components/Note';
 
@@ -19,12 +19,12 @@ const EducationPageContent = () => {
                         A <b>financial swap</b> is a derivative contract between two parties which involves an exchange
                         of cash flow based on a predetermined <b>notional principal amount</b> (aka <b>notional value</b> or <b>notional</b>),
                         One cash flow is generally fixed, while the other is variable and based on a benchmark interest rate, floating currency exchange rate, or index price.
-                        <Text>
-                            - reference: <Link href='https://www.investopedia.com/terms/s/swap.asp'>swaps-finance</Link>
-                        </Text>
+                        <Box as="br" />
+                        <Box as="br" />
+                        Reference: <Link href='https://www.investopedia.com/terms/s/swap.asp'>swaps-finance</Link>
                     </Note>
 
-                    <Heading id="pros" as='h2' size='xl'> Advantages of Panda Finance </Heading>
+                    {/* <Heading id="pros" as='h2' size='xl'> Advantages of Panda Finance </Heading>
                     <Heading as='h3' size='lg'> No clearing house, No expensive Fees </Heading>
                     <Text>
                         Every deals are hardcoded into the swap contract, ensuring execution according to the code and eliminating the need
@@ -127,23 +127,28 @@ const EducationPageContent = () => {
                             </List>
                         </ListItem>
 
-                    </OrderedList>
+                    </OrderedList> */}
 
                     <Heading id="#glossary" as='h2' size='xl'> Glossary </Heading>
                     <Heading as='h3' size='lg'> Participants </Heading>
                     <List>
                         <Text> <b>Opener/OrderMaker</b>: A user making an offer for a Swap contract.  </Text>
-                        <Text> <ListItem> <ListIcon as={ChevronRightIcon} color='green.500' />
-                            Can make an offer for a Swap contract.
+                        <ListItem>
+                            <Text>
+                                <ListIcon as={ChevronRightIcon} color='green.500' />
+                                Can make an offer for a Swap contract.
+                            </Text>
                         </ListItem>
-                        </Text>
+
                         <Text> <b>Pairer/OrderTaker</b>: A user joining an offer for a Swap Contract.  </Text>
-                        <Text>
-                            <ListItem>
+
+                        <ListItem>
+                            <Text>
                                 <ListIcon as={ChevronRightIcon} color='green.500' />
                                 Can take an offer for a Swap contract.
-                            </ListItem>
-                        </Text>
+                            </Text>
+                        </ListItem>
+
                         <Text> <b>EquitySwap</b>: The <i>smart</i> contract processing the Swap contract logic.  </Text>
                     </List>
                 </Stack>
