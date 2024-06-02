@@ -1,35 +1,13 @@
 // Header.tsx
 "use client";
-import { ethers } from 'ethers';
 import { Flex, Box, Text, Button, Link, useColorModeValue } from '@chakra-ui/react';
 import { colors } from './styles/colors';
-import { useWallet } from '@/context/WalletConnect';
+import { useAccount } from '@/context/AccountContext';
 
-type HeaderProps = {
-    account: string | null;
-    setAccount: React.Dispatch<React.SetStateAction<string | null>>;
-};
-
-
-const Header: React.FC<HeaderProps> = ({ account, setAccount }) => {
-
-    const connectAccount = async () => {
-        if (window.ethereum) {
-            try {
-                const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-                if (accounts.length > 0) {
-                    setAccount(accounts[0]);
-                }
-            } catch (error) {
-                console.error("Failed to connect account:", error);
-            }
-        } else {
-            alert('MetaMask is not installed. Please install it to use this feature!');
-        }
-    };
+const Header: React.FC = () => {
+    const { account, connectAccount } = useAccount();
 
     const bgColor = useColorModeValue(`#000000BB`, '#000000CC');
-
 
     return (
         <Flex as="header" bg={bgColor} p={4} color="white" justifyContent="space-between" alignItems="center">

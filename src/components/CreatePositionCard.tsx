@@ -31,6 +31,7 @@ const CreatePositionCard: React.FC = () => {
     const [totalIntervals, setTotalIntervals] = useState<number | null>(1);
     const [settlementTokenId, setSettlementTokenId] = useState<number | null>(null);
     const [yieldId, setYieldId] = useState<number | null>(0);
+    const [chainlinkAutomation, setChainlinkAutomation] = useState<boolean | null>(null);
 
     const toast = useToast();
 
