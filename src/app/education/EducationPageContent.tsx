@@ -106,7 +106,7 @@ const EducationPageContent = () => {
                             <List>
                                 <ListItem>
                                     <Text> <ListIcon as={ChevronRightIcon} color='green.500' />
-                                        After each period or at the swap's end, the winner can manually withdraw their profit.
+                                        After each period or at the swap termination, the winner can manually withdraw their profit.
                                     </Text>
                                 </ListItem>
                                 <ListItem>
