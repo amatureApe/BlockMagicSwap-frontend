@@ -29,19 +29,12 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
     const [tokenOptions, setTokenOptions] = useState([]);
     const [feedOptions, setFeedOptions] = useState([]);
     const [cryptoSwapAddr, setCryptoSwapAddr] = useState<string | undefined>(undefined);
+    const [isAutomated, setIsAutomated] = useState(false);
 
     const toast = useToast();
 
     useEffect(() => {
         if (!currentChain) {
-            console.error('Current chain is not set');
-            toast({
-                title: "Chain Required",
-                description: "Please select a blockchain network.",
-                status: "warning",
-                duration: 5000,
-                isClosable: true,
-            });
             setIsLoading(false);
             return;
         }
@@ -69,8 +62,12 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
                 }
 
                 const fetchedContract = await contract.getSwapContract(contractMasterId, contractId);
-                console.log("PING", fetchedContract)
                 setSwapContract(fetchedContract);
+
+                if (currentChain !== 'arbitrum') {
+                    const automationStatus = await fetchedContract.chainlinkAutomation;
+                    setIsAutomated(automationStatus);
+                }
             } catch (error) {
                 console.error('Error fetching contract details:', error);
                 toast({
@@ -87,16 +84,13 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
         fetchContractDetails();
     }, [contractMasterId, contractId, currentChain, toast]);
 
-    // Rest of your component code
-
-
-    useEffect(() => {
-        if (swapContract) {
-            console.log('Swap Contract:', swapContract);
-            console.log('User A:', swapContract.userA);
-            console.log(currentChain)
+    const renderAutomationStatus = () => {
+        if (currentChain === 'arbitrum') {
+            return "Automation is not available on this chain";
+        } else {
+            return isAutomated ? "Automation is enabled" : "Automation is disabled";
         }
-    }, [swapContract]);
+    };
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -275,11 +269,15 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
                 <Divider mb={6} />
 
                 <Flex>
-                    <Text color={colors.lightBlue[200]} fontSize="xl" mb={6}><strong>Yield:</strong> {getYieldLabel(yieldId)}</Text>
+                    <Text color={colors.lightBlue[200]} fontSize="xl" mb={2}><strong>Yield:</strong> {getYieldLabel(yieldId)}</Text>
                 </Flex>
                 <Flex>
-                    <Text color={colors.lightBlue[200]} fontSize="xl" mb={6}><strong>Yield Shares:</strong> {yieldShares.toString()}</Text>
+                    <Text color={colors.lightBlue[200]} fontSize="xl" mb={2}><strong>Yield Shares:</strong> {yieldShares.toString()}</Text>
                 </Flex>
+
+                <Text color={colors.lightBlue[200]} fontSize="xl" mb={6}>
+                    <strong>Automated:</strong> {renderAutomationStatus()}
+                </Text>
 
                 <Divider mb={6} />
 
