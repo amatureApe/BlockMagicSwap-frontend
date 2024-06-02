@@ -12,14 +12,11 @@ const Header: React.FC = () => {
     return (
         <Flex as="header" bg={bgColor} p={4} color="white" justifyContent="space-between" alignItems="center">
             <Flex gap="10" ml={8}>
-                <Link href="/">
-                    <Text fontSize="lg" fontWeight="bold">Home</Text>
+                <Link href="/market">
+                    <Text fontSize="lg" fontWeight="bold">Market</Text>
                 </Link>
                 <Link href="/education">
                     <Text fontSize="lg" fontWeight="bold">Education</Text>
-                </Link>
-                <Link href="/markets">
-                    <Text fontSize="lg" fontWeight="bold">Markets</Text>
                 </Link>
                 <Link href="/create">
                     <Text fontSize="lg" fontWeight="bold">Create</Text>
