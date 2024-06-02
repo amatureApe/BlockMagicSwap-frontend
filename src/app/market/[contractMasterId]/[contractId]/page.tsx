@@ -70,13 +70,6 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
                 }
             } catch (error) {
                 console.error('Error fetching contract details:', error);
-                toast({
-                    title: "Error Fetching Contract",
-                    description: error.message,
-                    status: "error",
-                    duration: 5000,
-                    isClosable: true,
-                });
             }
             setIsLoading(false);
         }

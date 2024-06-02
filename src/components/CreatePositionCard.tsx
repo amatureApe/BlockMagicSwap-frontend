@@ -38,8 +38,13 @@ const CreatePositionCard: React.FC = () => {
     const [cryptoSwapAddr, setCryptoSwapAddr] = useState<string | undefined>(undefined);
     const [LINK, setLINK] = useState<string | undefined>(undefined);
 
-    const [feedOptions, setFeedOptions] = useState([]);
-    const [tokenOptions, setTokenOptions] = useState([]);
+
+    interface Option {
+        value: number;
+        label: string;
+    }
+    const [feedOptions, setFeedOptions] = useState<Option[]>([]);
+    const [tokenOptions, setTokenOptions] = useState<Option[]>([]);
 
     const toast = useToast();
 
@@ -112,6 +117,7 @@ const CreatePositionCard: React.FC = () => {
         setError("");
         setIsLoading(true);
 
+        // @ts-ignore
         const settlementTokenAddress = tokenOptions.find(o => o.value === settlementTokenId)?.address;
         const spenderAddress = cryptoSwapAddr;
 

@@ -1,21 +1,26 @@
 import { yieldOptions } from "@/components/utils/selectOptions";
 import { addresses } from "@/contract/addresses";
 
-export const getFeedLabel = (feedOptions: any, feedId: number): string => {
+interface FeedOption {
+    value: number;
+    label: string;
+}
+
+interface TokenOption {
+    value: number;
+    label: string;
+    address: string;
+}
+
+export const getFeedLabel = (feedOptions: FeedOption[], feedId: number): string => {
     const feed = feedOptions.find(option => option.value === feedId);
     return feed ? feed.label : 'Unknown';
 };
 
-export const getTokenLabel = (tokenOptions: any, tokenId: number): string => {
+export const getTokenLabel = (tokenOptions: TokenOption[], tokenId: number): string => {
     const token = tokenOptions.find(option => option.value === tokenId);
     return token ? token.label : 'Unknown';
 }
-
-type TokenOption = {
-    value: number;
-    address: string;
-    label: string;
-};
 
 export const getTokenAddress = (tokenOptions: TokenOption[], tokenId: number): string => {
     const token = tokenOptions.find(option => option.value === tokenId);
@@ -26,7 +31,6 @@ export const getYieldLabel = (yieldId: number): string => {
     const yieldOption = yieldOptions.find(option => option.value === yieldId);
     return yieldOption ? yieldOption.label : 'Unknown';
 }
-
 export const getEndDate = (startDate: number, periodInterval: number, totalIntervals: number): string => {
     return new Date(startDate * 1000 + periodInterval * totalIntervals * 1000).toLocaleDateString("en-US");
 };

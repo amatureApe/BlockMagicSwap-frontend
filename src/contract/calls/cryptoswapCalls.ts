@@ -5,35 +5,35 @@ import cryptoSwapAbi from '@/contract/abis/CryptoSwap.json';
 import { checkApproval, approve } from "../checkApproval";
 import { getTokenAddress } from "@/utils/helperFunctions";
 
-export const handlePairSwap = async (contract: SwapContract, account: string) => {
-    const cryptoSwapAddr = addresses.arbitrum.contracts.cryptoSwap;
+// export const handlePairSwap = async (contract: SwapContract, account: string) => {
+//     const cryptoSwapAddr = addresses.arbitrum.contracts.cryptoSwap;
 
-    const cryptoSwap = await contractConnection({ address: cryptoSwapAddr, abi: cryptoSwapAbi });
-    if (!cryptoSwap) {
-        console.error('Failed to connect to contract.');
-        return;
-    }
+//     const cryptoSwap = await contractConnection({ address: cryptoSwapAddr, abi: cryptoSwapAbi });
+//     if (!cryptoSwap) {
+//         console.error('Failed to connect to contract.');
+//         return;
+//     }
 
-    if (account) {
-        const isApproved = await checkApproval(getTokenAddress(contract.settlementTokenId), cryptoSwapAddr, account, contract.notionalAmount);
-        if (!isApproved) {
-            await approve(getTokenAddress(contract.settlementTokenId), cryptoSwapAddr);
-        }
+//     if (account) {
+//         const isApproved = await checkApproval(getTokenAddress(contract.settlementTokenId), cryptoSwapAddr, account, contract.notionalAmount);
+//         if (!isApproved) {
+//             await approve(getTokenAddress(contract.settlementTokenId), cryptoSwapAddr);
+//         }
 
-        const swapTx = await cryptoSwap.pairSwap(contract.contractMasterId, contract.contractId);
-        await swapTx.wait();
-    }
-}
+//         const swapTx = await cryptoSwap.pairSwap(contract.contractMasterId, contract.contractId);
+//         await swapTx.wait();
+//     }
+// }
 
-export const handleWithdraw = async (contract: SwapContract, account: string) => {
-    const cryptoSwapAddr = addresses.arbitrum.contracts.cryptoSwap;
+// export const handleWithdraw = async (contract: SwapContract, account: string) => {
+//     const cryptoSwapAddr = addresses.arbitrum.contracts.cryptoSwap;
 
-    const cryptoSwap = await contractConnection({ address: cryptoSwapAddr, abi: cryptoSwapAbi });
-    if (!cryptoSwap) {
-        console.error('Failed to connect to contract.');
-        return;
-    }
+//     const cryptoSwap = await contractConnection({ address: cryptoSwapAddr, abi: cryptoSwapAbi });
+//     if (!cryptoSwap) {
+//         console.error('Failed to connect to contract.');
+//         return;
+//     }
 
-    const withdrawTx = await cryptoSwap.withdrawWinnings(contract.contractMasterId, contract.contractId);
-    await withdrawTx.wait();
-}
+//     const withdrawTx = await cryptoSwap.withdrawWinnings(contract.contractMasterId, contract.contractId);
+//     await withdrawTx.wait();
+// }
