@@ -8,7 +8,6 @@ import { BigNumber } from 'ethers';
 import { Box, Text, Badge, Divider, Flex, Tooltip, Button } from '@chakra-ui/react';
 import { SwapContract } from '@/contract/interfaces/SwapContract';
 import { colors } from './styles/colors';
-import { feedOptions, yieldOptions, tokenOptions } from './utils/selectOptions';
 
 import contractConnection from '@/contract/contractConnection';
 import { checkApproval, approve } from '@/contract/checkApproval';
@@ -30,7 +29,12 @@ const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status, myPosition }) 
     const toast = useToast();
 
     const currentAddresses = getCurrentAddresses(currentChain);
+    const feedOptions = currentAddresses.priceFeeds;
+    const tokenOptions = currentAddresses.tokens;
+
     const { cryptoSwap: cryptoSwapAddr } = currentAddresses.contracts;
+
+    console.log(myPosition, contracts)
 
     const handleCardRoute = (contract: SwapContract) => {
         router.push(`/market/${contract.contractMasterId}/${contract.contractId}`);
@@ -54,10 +58,10 @@ const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status, myPosition }) 
         }
 
         if (contractInstance) {
-            const isApproved = await checkApproval(getTokenAddress(contract.settlementTokenId), cryptoSwapAddr, account, contract.notionalAmount);
+            const isApproved = await checkApproval(getTokenAddress(tokenOptions, contract.settlementTokenId), cryptoSwapAddr, account, contract.notionalAmount);
             if (!isApproved) {
                 try {
-                    await approve(getTokenAddress(contract.settlementTokenId), cryptoSwapAddr);
+                    await approve(getTokenAddress(tokenOptions, contract.settlementTokenId), cryptoSwapAddr);
                 } catch (error) {
                     console.error('Failed to approve token.', error);
                     toast({
@@ -132,11 +136,11 @@ const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status, myPosition }) 
             ).map((contract, index) => (
                 <Box key={index} p={4} shadow="md" backgroundColor={colors.offBlack} borderWidth="1px" borderRadius="lg" m={2} width="300px">
                     <Flex justifyContent="space-between">
-                        <Text color={colors.offWhite} fontSize="xl" fontWeight="bold">{getFeedLabel(contract.legA.feedId)}</Text>
+                        <Text color={colors.offWhite} fontSize="xl" fontWeight="bold">{getFeedLabel(feedOptions, contract.legA.feedId)}</Text>
                         <Badge colorScheme={getStatusProps(contract.status.toString()).colorScheme} mb={3}>
                             {getStatusProps(contract.status.toString()).label}
                         </Badge>
-                        <Text color={colors.offWhite} fontSize="xl" fontWeight="bold">{getFeedLabel(contract.legB.feedId)}</Text>
+                        <Text color={colors.offWhite} fontSize="xl" fontWeight="bold">{getFeedLabel(feedOptions, contract.legB.feedId)}</Text>
                     </Flex>
                     <Divider mb={2} />
 
@@ -152,8 +156,8 @@ const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status, myPosition }) 
                     <Divider my={2} />
 
                     <Text color={colors.lightBlue[200]} mt={1}><strong>Notional:</strong> {contract.notionalAmount.toLocaleString()}
-                        <Tooltip label={getTokenAddress(contract.settlementTokenId)}>
-                            <span>{' '}{getTokenLabel(contract.settlementTokenId)}</span>
+                        <Tooltip label={getTokenAddress(tokenOptions, contract.settlementTokenId)}>
+                            <span>{' '}{getTokenLabel(tokenOptions, contract.settlementTokenId)}</span>
                         </Tooltip>
                     </Text>
 

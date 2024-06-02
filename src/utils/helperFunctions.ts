@@ -1,20 +1,26 @@
-import { feedOptions, tokenOptions, yieldOptions } from "@/components/utils/selectOptions";
+import { yieldOptions } from "@/components/utils/selectOptions";
 import { addresses } from "@/contract/addresses";
 
-export const getFeedLabel = (feedId: number): string => {
+export const getFeedLabel = (feedOptions: any, feedId: number): string => {
     const feed = feedOptions.find(option => option.value === feedId);
     return feed ? feed.label : 'Unknown';
 };
 
-export const getTokenLabel = (tokenId: number): string => {
+export const getTokenLabel = (tokenOptions: any, tokenId: number): string => {
     const token = tokenOptions.find(option => option.value === tokenId);
     return token ? token.label : 'Unknown';
 }
 
-export const getTokenAddress = (tokenId: number): string => {
+type TokenOption = {
+    value: number;
+    address: string;
+    label: string;
+};
+
+export const getTokenAddress = (tokenOptions: TokenOption[], tokenId: number): string => {
     const token = tokenOptions.find(option => option.value === tokenId);
     return token ? token.address : 'Unknown';
-}
+};
 
 export const getYieldLabel = (yieldId: number): string => {
     const yieldOption = yieldOptions.find(option => option.value === yieldId);
@@ -47,4 +53,4 @@ export const getStatusProps = (status: string) => {
 };
 
 // @ts-ignore
-export const getCurrentAddresses = (chain) => addresses[chain] || addresses.arbitrum; // Default to Arbitrum if not specified
+export const getCurrentAddresses = (chain) => addresses[chain]; // Default to Arbitrum if not specified

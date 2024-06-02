@@ -42,11 +42,7 @@ const CreatePositionCard: React.FC = () => {
     const feedOptions = currentAddresses.priceFeeds;
     const tokenOptions = currentAddresses.tokens;
 
-    console.log("PING", feedOptions)
-
     const { cryptoSwap: cryptoSwapAddr, chainlink: LINK } = currentAddresses.contracts;
-
-    console.log(account, currentChain, cryptoSwapAddr)
 
     const handleNumericChange = (value: string, setState: React.Dispatch<React.SetStateAction<number | null>>) => {
         const numValue = Number(value);
@@ -78,7 +74,7 @@ const CreatePositionCard: React.FC = () => {
     const checkFields = () => {
         const isValidInput = (value: any): boolean => value !== null && value !== undefined;
 
-        console.log(contractCreationCount, notionalAmount, startDate, feedIdA, feedIdB, periodInterval, totalIntervals, settlementTokenId)
+        console.log("DING", contractCreationCount, notionalAmount, startDate, feedIdA, feedIdB, periodInterval, totalIntervals, settlementTokenId, yieldId, chainlinkAutomation)
 
         if (!isValidInput(contractCreationCount) || !isValidInput(notionalAmount) || !isValidInput(startDate) ||
             !isValidInput(feedIdA) || !isValidInput(feedIdB) || !isValidInput(periodInterval) ||
@@ -159,6 +155,8 @@ const CreatePositionCard: React.FC = () => {
                     });
                 }
             }
+
+            console.log("SING", currentChain)
 
             // After approval, proceed to create the swap
             const contract = await contractConnection({

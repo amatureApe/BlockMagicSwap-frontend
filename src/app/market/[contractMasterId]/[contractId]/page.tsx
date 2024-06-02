@@ -22,22 +22,67 @@ interface ContractDetailsPageProps {
 
 const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
     const { account, currentChain } = useContext(AccountContext);
-
     const { contractMasterId, contractId } = params;
     const [swapContract, setSwapContract] = useState<SwapContract | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-
+    const [tokenOptions, setTokenOptions] = useState([]);
+    const [feedOptions, setFeedOptions] = useState([]);
     const toast = useToast();
 
-    const currentAddresses = getCurrentAddresses(currentChain);
-    const { cryptoSwapAddr } = currentAddresses.contracts;
+    useEffect(() => {
+        if (!currentChain || !contractMasterId || !contractId) {
+            console.error('Required parameters are missing');
+            setIsLoading(false);
+            return;
+        }
 
-    const handlePairSwap = async (contract: SwapContract, account: string) => {
+        async function fetchContractDetails() {
+            setIsLoading(true);
+            const currentAddresses = getCurrentAddresses(currentChain);
 
-        const cryptoSwap = await contractConnection({ address: cryptoSwapAddr, abi: cryptoSwapAbi });
+            if (currentAddresses) {
+                setTokenOptions(currentAddresses.tokens || []);
+                setFeedOptions(currentAddresses.priceFeeds || []);
+                const contract = await contractConnection({
+                    address: currentAddresses.contracts.cryptoSwap,
+                    abi: cryptoSwapAbi
+                });
+
+                if (contract) {
+                    try {
+                        const fetchedContract = await contract.getSwapContract(Number(contractMasterId), Number(contractId));
+                        setSwapContract(fetchedContract);
+                    } catch (error) {
+                        console.error('Failed to fetch swap contract details:', error);
+                    }
+                } else {
+                    console.error('Failed to connect to the contract.');
+                }
+            } else {
+                console.error("Failed to get current addresses for chain:", currentChain);
+            }
+
+            setIsLoading(false);
+        };
+
+        fetchContractDetails();
+    }, [contractMasterId, contractId, currentChain]);
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+
+    if (!swapContract) {
+        return <div>Contract not found.</div>;
+    }
+
+    const { userA, userB, period, legA, legB, settlementTokenId, yieldId, notionalAmount, yieldShares, status } = swapContract;
+
+    const handlePairSwap = async (contract: SwapContract, account: string, address: string) => {
+
+        const cryptoSwap = await contractConnection({ address: cryptoSwap, abi: cryptoSwapAbi });
 
         if (!account) {
-            console.log(account)
             toast({
                 title: "Error",
                 description: "Account not connected.",
@@ -50,10 +95,10 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
         }
 
         if (cryptoSwap) {
-            const isApproved = await checkApproval(getTokenAddress(contract.settlementTokenId), cryptoSwapAddr, account, contract.notionalAmount);
+            const isApproved = await checkApproval(getTokenAddress(tokenOptions, contract.settlementTokenId), cryptoSwap, account, contract.notionalAmount);
             if (!isApproved) {
                 try {
-                    await approve(getTokenAddress(contract.settlementTokenId), cryptoSwapAddr);
+                    await approve(getTokenAddress(tokenOptions, contract.settlementTokenId), cryptoSwap);
                 } catch (error) {
                     console.error('Failed to approve token.', error);
                     toast({
@@ -141,49 +186,19 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
         }
     }
 
-    useEffect(() => {
-        async function fetchContractDetails() {
-            if (!contractMasterId || !contractId) {
-                console.error('Invalid contract master ID or contract ID.');
-                setIsLoading(false);
-                return;
-            }
+    console.log
 
-            const contract = await contractConnection({
-                address: addresses.arbitrum.contracts.cryptoSwap,
-                abi: cryptoSwapAbi
-            });
-
-            if (contract) {
-                const swapContract = await contract.getSwapContract(Number(contractMasterId), Number(contractId));
-                setSwapContract(swapContract);
-            } else {
-                console.error('Failed to connect to the contract.');
-            }
-
-            setIsLoading(false);
-        }
-
-        fetchContractDetails();
-    }, [contractMasterId, contractId]);
-
-    if (isLoading) {
-        return <div>Loading...</div>;
+    if (!swapContract || !tokenOptions.length) {
+        return <div>Loading or no data available...</div>;
     }
-
-    if (!swapContract) {
-        return <div>Contract not found.</div>;
-    }
-
-    const { userA, userB, period, legA, legB, settlementTokenId, yieldId, notionalAmount, yieldShares, status } = swapContract;
 
     return (
         <Flex justify="center" align="center" minH="100vh">
             <Box p={8} shadow="xl" bg={colors.offBlack} borderWidth="1px" borderRadius="lg" maxW="800px" w="100%">
                 <Flex justifyContent="space-between" alignItems="center" mb={6}>
-                    <Text color={colors.offWhite} fontSize="3xl" fontWeight="bold">{getFeedLabel(legA.feedId)}</Text>
+                    <Text color={colors.offWhite} fontSize="3xl" fontWeight="bold">{getFeedLabel(feedOptions, legA.feedId)}</Text>
                     <Badge colorScheme="blue" mb={3} fontSize="lg">{`Contract: ${contractMasterId} - ${contractId}`}</Badge>
-                    <Text color={colors.offWhite} fontSize="3xl" fontWeight="bold">{getFeedLabel(legB.feedId)}</Text>
+                    <Text color={colors.offWhite} fontSize="3xl" fontWeight="bold">{getFeedLabel(feedOptions, legB.feedId)}</Text>
                 </Flex>
                 <Divider mb={6} />
 
@@ -223,8 +238,8 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
 
                 <Text color={colors.lightBlue[200]} fontSize="xl" mb={6}>
                     <strong>Notional:</strong> {notionalAmount.toString()}
-                    <Tooltip label={getTokenAddress(settlementTokenId)}>
-                        <span>{' '}{getTokenLabel(settlementTokenId)}</span>
+                    <Tooltip label={getTokenAddress(tokenOptions, settlementTokenId)}>
+                        <span>{' '}{getTokenLabel(tokenOptions, settlementTokenId)}</span>
                     </Tooltip>
                 </Text>
 

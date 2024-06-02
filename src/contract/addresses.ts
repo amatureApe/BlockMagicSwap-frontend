@@ -24,7 +24,7 @@ export const addresses = {
     },
     matic: {
         contracts: {
-            cryptoSwap: "0xeD3B4562B7afE306A405462160c7EedDbF6D7e91",
+            cryptoSwap: "0x9f756170Bb2234F17d69D78CDA22E9e9CaDF71f0",
             yieldStrategyManager: "0x1f210E83247d7AbFde6104a3ccA461FEbb68e3ef",
             priceFeedManager: "0xF9B85094B9A975022C8840B511bD9a445EAa25a0",
             chainlink: "0xb0897686c545045aFc77CF20eC7A532E3120E0F1"

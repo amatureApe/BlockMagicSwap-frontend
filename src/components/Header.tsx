@@ -11,8 +11,6 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ currentChain }) => {
     const { account, connectAccount } = useAccount();
 
-    console.log(currentChain)
-
     const bgColor = useColorModeValue(`#000000BB`, '#000000CC');
 
     return (
