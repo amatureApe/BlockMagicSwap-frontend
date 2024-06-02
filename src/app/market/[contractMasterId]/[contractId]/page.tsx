@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { AccountContext } from '@/context/AccountContext';
 import cryptoSwapAbi from '@/contract/abis/CryptoSwap.json';
+import cryptoSwapAutomatedAbi from '@/contract/abis/CryptoSwapAutomated.json';
 import { addresses } from '@/contract/addresses';
 import contractConnection from '@/contract/contractConnection';
 import { SwapContract } from '@/contract/interfaces/SwapContract';
@@ -27,60 +28,89 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [tokenOptions, setTokenOptions] = useState([]);
     const [feedOptions, setFeedOptions] = useState([]);
+    const [cryptoSwapAddr, setCryptoSwapAddr] = useState<string | undefined>(undefined);
+
     const toast = useToast();
 
     useEffect(() => {
-        if (!currentChain || !contractMasterId || !contractId) {
-            console.error('Required parameters are missing');
+        if (!currentChain) {
+            console.error('Current chain is not set');
+            toast({
+                title: "Chain Required",
+                description: "Please select a blockchain network.",
+                status: "warning",
+                duration: 5000,
+                isClosable: true,
+            });
             setIsLoading(false);
             return;
         }
 
         async function fetchContractDetails() {
             setIsLoading(true);
-            const currentAddresses = getCurrentAddresses(currentChain);
+            try {
+                const currentAddresses = getCurrentAddresses(currentChain);
+                if (!currentAddresses) {
+                    throw new Error("Failed to get current addresses for the chain: " + currentChain);
+                }
 
-            if (currentAddresses) {
                 setTokenOptions(currentAddresses.tokens || []);
                 setFeedOptions(currentAddresses.priceFeeds || []);
+                setCryptoSwapAddr(currentAddresses.contracts.cryptoSwap);
+
+                const abi = currentChain === 'arbitrum' ? cryptoSwapAbi : cryptoSwapAutomatedAbi;
+
                 const contract = await contractConnection({
                     address: currentAddresses.contracts.cryptoSwap,
-                    abi: cryptoSwapAbi
+                    abi: abi
                 });
-
-                if (contract) {
-                    try {
-                        const fetchedContract = await contract.getSwapContract(Number(contractMasterId), Number(contractId));
-                        setSwapContract(fetchedContract);
-                    } catch (error) {
-                        console.error('Failed to fetch swap contract details:', error);
-                    }
-                } else {
-                    console.error('Failed to connect to the contract.');
+                if (!contract) {
+                    throw new Error('Failed to connect to the contract.');
                 }
-            } else {
-                console.error("Failed to get current addresses for chain:", currentChain);
-            }
 
+                const fetchedContract = await contract.getSwapContract(contractMasterId, contractId);
+                console.log("PING", fetchedContract)
+                setSwapContract(fetchedContract);
+            } catch (error) {
+                console.error('Error fetching contract details:', error);
+                toast({
+                    title: "Error Fetching Contract",
+                    description: error.message,
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                });
+            }
             setIsLoading(false);
-        };
+        }
 
         fetchContractDetails();
-    }, [contractMasterId, contractId, currentChain]);
+    }, [contractMasterId, contractId, currentChain, toast]);
+
+    // Rest of your component code
+
+
+    useEffect(() => {
+        if (swapContract) {
+            console.log('Swap Contract:', swapContract);
+            console.log('User A:', swapContract.userA);
+            console.log(currentChain)
+        }
+    }, [swapContract]);
 
     if (isLoading) {
         return <div>Loading...</div>;
     }
 
     if (!swapContract) {
-        return <div>Contract not found.</div>;
+        return <div>Contract not found or not loaded yet.</div>;
     }
 
     const { userA, userB, period, legA, legB, settlementTokenId, yieldId, notionalAmount, yieldShares, status } = swapContract;
 
     const handlePairSwap = async (contract: SwapContract, account: string, address: string) => {
 
-        const cryptoSwap = await contractConnection({ address: cryptoSwap, abi: cryptoSwapAbi });
+        const cryptoSwap = await contractConnection({ address: address, abi: cryptoSwapAbi });
 
         if (!account) {
             toast({
@@ -95,10 +125,10 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
         }
 
         if (cryptoSwap) {
-            const isApproved = await checkApproval(getTokenAddress(tokenOptions, contract.settlementTokenId), cryptoSwap, account, contract.notionalAmount);
+            const isApproved = await checkApproval(getTokenAddress(tokenOptions, contract.settlementTokenId), address, account, contract.notionalAmount);
             if (!isApproved) {
                 try {
-                    await approve(getTokenAddress(tokenOptions, contract.settlementTokenId), cryptoSwap);
+                    await approve(getTokenAddress(tokenOptions, contract.settlementTokenId), address);
                 } catch (error) {
                     console.error('Failed to approve token.', error);
                     toast({
@@ -157,17 +187,16 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
                 w={250}
                 isDisabled={contract.status.toString() !== '0'}
                 colorScheme={statusProps.colorScheme}
-                onClick={() => handlePairSwap(contract, account)}
+                onClick={() => handlePairSwap(contract, account, cryptoSwapAddr as string)}
             >
                 {buttonText}
             </Button>
         );
     };
 
-    const handleWithdraw = async (contract: SwapContract, account: string) => {
-        const cryptoSwapAddr = addresses.arbitrum.contracts.cryptoSwap;
+    const handleWithdraw = async (contract: SwapContract, account: string, address: string) => {
 
-        const cryptoSwap = await contractConnection({ address: cryptoSwapAddr, abi: cryptoSwapAbi });
+        const cryptoSwap = await contractConnection({ address: address, abi: cryptoSwapAbi });
         if (cryptoSwap) {
             try {
                 const withdrawTx = await cryptoSwap.withdrawWinnings(contract.contractMasterId, contract.contractId);
@@ -184,12 +213,6 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
                 });
             }
         }
-    }
-
-    console.log
-
-    if (!swapContract || !tokenOptions.length) {
-        return <div>Loading or no data available...</div>;
     }
 
     return (
@@ -231,7 +254,7 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
                 </Flex>
 
                 <Flex justifyContent="center">
-                    <Button w={200} bg={colors.offWhite} color={colors.offBlack} onClick={() => handleWithdraw(swapContract, account as string)}>Withdraw</Button>
+                    <Button w={200} bg={colors.offWhite} color={colors.offBlack} onClick={() => handleWithdraw(swapContract, account as string, cryptoSwapAddr as string)}>Withdraw</Button>
                 </Flex>
 
                 <Divider my={6} />

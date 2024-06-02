@@ -34,8 +34,6 @@ const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status, myPosition }) 
 
     const { cryptoSwap: cryptoSwapAddr } = currentAddresses.contracts;
 
-    console.log(myPosition, contracts)
-
     const handleCardRoute = (contract: SwapContract) => {
         router.push(`/market/${contract.contractMasterId}/${contract.contractId}`);
     };
