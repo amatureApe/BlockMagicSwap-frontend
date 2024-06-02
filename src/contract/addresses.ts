@@ -14,5 +14,21 @@ export const addresses = {
             ethUsd: "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612",
             btcUsd: "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612"
         }
+    },
+    polygon: {
+        contracts: {
+            cryptoSwap: "0xeD3B4562B7afE306A405462160c7EedDbF6D7e91",
+            yieldStrategyManager: "0x1f210E83247d7AbFde6104a3ccA461FEbb68e3ef",
+            priceFeedManager: "0xF9B85094B9A975022C8840B511bD9a445EAa25a0",
+        },
+        tokens: {
+            usdc: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+            weth: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+            wbtc: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+        },
+        priceFeeds: {
+            ethUsd: "0xF9680D99D6C9589e2a93a78A04A279e509205945",
+            btcUsd: "0xc907E116054Ad103354f2D350FD2514433D57F6f"
+        }
     }
 }
