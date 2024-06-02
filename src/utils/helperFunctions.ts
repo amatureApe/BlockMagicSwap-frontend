@@ -30,3 +30,18 @@ export const formatAddress = (address: string) => `${address.slice(0, 5)}...${ad
 export const formatDate = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleDateString("en-US");
 };
+
+export const getStatusProps = (status: string) => {
+    switch (status) {
+        case '0':
+            return { label: 'OPEN', colorScheme: 'blue' };
+        case '1':
+            return { label: 'ACTIVE', colorScheme: 'green' };
+        case '2':
+            return { label: 'SETTLED', colorScheme: 'purple' };
+        case '4':
+            return { label: 'CANCELED', colorScheme: 'red' };
+        default:
+            return { label: 'UNKNOWN', colorScheme: 'gray' };
+    }
+};

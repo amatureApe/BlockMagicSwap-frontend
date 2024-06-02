@@ -14,7 +14,8 @@ import contractConnection from '@/contract/contractConnection';
 import { checkApproval, approve } from '@/contract/checkApproval';
 import { addresses } from '@/contract/addresses';
 import cryptoSwapAbi from '@/contract/abis/CryptoSwap.json';
-import { getTokenAddress, getFeedLabel, getTokenLabel, getYieldLabel, getEndDate, formatAddress, formatDate } from '@/utils/helperFunctions';
+import { getTokenAddress, getFeedLabel, getTokenLabel, getYieldLabel, getEndDate, formatAddress, formatDate, getStatusProps } from '@/utils/helperFunctions';
+import { useToast } from '@chakra-ui/react';
 
 interface CardsWrapProps {
     contracts: SwapContract[];
@@ -22,82 +23,101 @@ interface CardsWrapProps {
     myPosition: boolean;
 }
 
-const getStatusProps = (status: string) => {
-    switch (status) {
-        case '0':
-            return { label: 'OPEN', colorScheme: 'blue' };
-        case '1':
-            return { label: 'ACTIVE', colorScheme: 'green' };
-        case '2':
-            return { label: 'SETTLED', colorScheme: 'purple' };
-        case '4':
-            return { label: 'CANCELED', colorScheme: 'red' };
-        default:
-            return { label: 'UNKNOWN', colorScheme: 'gray' };
-    }
-};
-
-const renderStatusButton = (contract: SwapContract, account: string) => {
-    const statusProps = getStatusProps(contract.status.toString());
-    let buttonText = '';
-
-    switch (contract.status.toString()) {
-        case '0':
-            buttonText = 'Take Position';
-            break;
-        case '1':
-            buttonText = 'Position Active';
-            break;
-        case '2':
-            buttonText = 'Position Settled';
-            break;
-        case '3':
-            buttonText = 'Position Canceled';
-            break;
-        default:
-            buttonText = 'Unknown Status';
-    }
-
-    return (
-        <Button
-            size="sm"
-            w={150}
-            isDisabled={contract.status.toString() !== '0'}
-            colorScheme={statusProps.colorScheme}
-            onClick={() => handlePairSwap(contract, account)}
-        >
-            {buttonText}
-        </Button>
-    );
-};
-
-const handlePairSwap = async (contract: SwapContract, account: string) => {
-    const cryptoSwapAddr = addresses.arbitrum.contracts.cryptoSwap;
-
-    const cryptoSwap = await contractConnection({ address: cryptoSwapAddr, abi: cryptoSwapAbi });
-    if (!cryptoSwap) {
-        console.error('Failed to connect to contract.');
-        return;
-    }
-
-    if (account) {
-        const isApproved = await checkApproval(getTokenAddress(contract.settlementTokenId), cryptoSwapAddr, account, contract.notionalAmount);
-        if (!isApproved) {
-            await approve(getTokenAddress(contract.settlementTokenId), cryptoSwapAddr);
-        }
-
-        const swapTx = await cryptoSwap.pairSwap(contract.contractMasterId, contract.contractId);
-        await swapTx.wait();
-    }
-}
-
-
 const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status, myPosition }) => {
     const router = useRouter();
     const { account } = useContext(AccountContext);
+    const toast = useToast();
 
-    const handleCardClick = (contract: SwapContract) => {
+    const handleCardRoute = (contract: SwapContract) => {
         router.push(`/markets/${contract.contractMasterId}/${contract.contractId}`);
+    };
+
+    const handlePairSwap = async (contract: SwapContract, account: string) => {
+        const cryptoSwapAddr = addresses.arbitrum.contracts.cryptoSwap;
+
+        const cryptoSwap = await contractConnection({ address: cryptoSwapAddr, abi: cryptoSwapAbi });
+
+        if (!account) {
+            console.log(account)
+            toast({
+                title: "Error",
+                description: "Account not connected.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "top",
+            });
+            return;
+        }
+
+        if (cryptoSwap) {
+            const isApproved = await checkApproval(getTokenAddress(contract.settlementTokenId), cryptoSwapAddr, account, contract.notionalAmount);
+            if (!isApproved) {
+                try {
+                    await approve(getTokenAddress(contract.settlementTokenId), cryptoSwapAddr);
+                } catch (error) {
+                    console.error('Failed to approve token.', error);
+                    toast({
+                        title: "Error",
+                        description: "Failed to approve the token.",
+                        status: "error",
+                        duration: 5000,
+                        isClosable: true,
+                        position: "top",
+                    });
+                    return;
+                }
+            }
+
+            try {
+                const swapTx = await cryptoSwap.pairSwap(contract.contractMasterId, contract.contractId);
+                await swapTx.wait();
+            } catch (error) {
+                console.error('Failed to execute pair swap.', error);
+                toast({
+                    title: "Error",
+                    description: "Failed to execute the pair swap.",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                    position: "top",
+                });
+            }
+        }
+    }
+
+    const renderStatusButton = (contract: SwapContract, account: string) => {
+        const statusProps = getStatusProps(contract.status.toString());
+        let buttonText = '';
+
+        switch (contract.status.toString()) {
+            case '0':
+                buttonText = 'Take Position';
+                break;
+            case '1':
+                buttonText = 'Position Active';
+                break;
+            case '2':
+                buttonText = 'Position Settled';
+                break;
+            case '3':
+                buttonText = 'Position Canceled';
+                break;
+            default:
+                buttonText = 'Unknown Status';
+        }
+
+        return (
+            <Button
+                size="sm"
+                w={150}
+                isDisabled={contract.status.toString() !== '0'}
+                colorScheme={statusProps.colorScheme}
+                onClick={() => handlePairSwap(contract, account)}
+            >
+                {buttonText}
+            </Button>
+        );
     };
 
 
@@ -107,10 +127,7 @@ const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status, myPosition }) 
                 (!myPosition || contract.userA.toLowerCase() === account) &&
                 (status === null || contract.status.toString() === status)
             ).map((contract, index) => (
-                <Box key={index} p={4} shadow="md" backgroundColor={colors.offBlack} borderWidth="1px" borderRadius="lg" m={2} width="300px"
-                    onClick={() => handleCardClick(contract)}
-                    cursor="pointer"
-                >
+                <Box key={index} p={4} shadow="md" backgroundColor={colors.offBlack} borderWidth="1px" borderRadius="lg" m={2} width="300px">
                     <Flex justifyContent="space-between">
                         <Text color={colors.offWhite} fontSize="xl" fontWeight="bold">{getFeedLabel(contract.legA.feedId)}</Text>
                         <Badge colorScheme={getStatusProps(contract.status.toString()).colorScheme} mb={3}>
@@ -154,8 +171,19 @@ const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status, myPosition }) 
 
                     <Divider my={2} />
 
-                    <Flex justifyContent="center">
+                    <Flex justifyContent="center" my={2}>
                         {renderStatusButton(contract, account as string)}
+                    </Flex>
+
+                    <Flex justifyContent="center">
+                        <Text
+                            size="sm"
+                            cursor="pointer"
+                            _hover={{ textDecoration: 'underline' }}
+                            onClick={() => handleCardRoute(contract)}
+                        >
+                            Contract Details
+                        </Text>
                     </Flex>
                 </Box>
             ))}
