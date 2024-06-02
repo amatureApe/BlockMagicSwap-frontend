@@ -58,7 +58,7 @@ const Header: React.FC<HeaderProps> = ({ account, setAccount }) => {
                     <Flex direction="row" align="center" px={5}>
                         <Button bg={colors.lightBlue[200]} color={colors.offBlack} _hover={{ bg: colors.lightBlue[100] }}>
                             <Flex direction="column">
-                                <Text fontSize={16}>{account.slice(0, 5) + '...' + account.slice(-4)}</Text>
+                                <Text fontSize={16} color={colors.offBlack}>{account.slice(0, 5) + '...' + account.slice(-4)}</Text>
                             </Flex>
                         </Button>
                     </Flex>

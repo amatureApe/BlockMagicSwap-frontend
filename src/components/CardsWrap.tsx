@@ -2,6 +2,7 @@
 
 import React, { useContext } from 'react';
 import { AccountContext } from '@/context/AccountContext';
+import { useRouter } from 'next/navigation';
 import { BigNumber } from 'ethers';
 
 import { Box, Text, Badge, Divider, Flex, Tooltip, Button } from '@chakra-ui/react';
@@ -13,6 +14,7 @@ import contractConnection from '@/contract/contractConnection';
 import { checkApproval, approve } from '@/contract/checkApproval';
 import { addresses } from '@/contract/addresses';
 import cryptoSwapAbi from '@/contract/abis/CryptoSwap.json';
+import { getTokenAddress, getFeedLabel, getTokenLabel, getYieldLabel, getEndDate, formatAddress, formatDate } from '@/utils/helperFunctions';
 
 interface CardsWrapProps {
     contracts: SwapContract[];
@@ -69,39 +71,6 @@ const renderStatusButton = (contract: SwapContract, account: string) => {
     );
 };
 
-
-
-
-const getFeedLabel = (feedId: number): string => {
-    const feed = feedOptions.find(option => option.value === feedId);
-    return feed ? feed.label : 'Unknown';
-};
-
-const getTokenLabel = (tokenId: number): string => {
-    const token = tokenOptions.find(option => option.value === tokenId);
-    return token ? token.label : 'Unknown';
-}
-
-const getTokenAddress = (tokenId: number): string => {
-    const token = tokenOptions.find(option => option.value === tokenId);
-    return token ? token.address : 'Unknown';
-}
-
-const getYieldLabel = (yieldId: number): string => {
-    const yieldOption = yieldOptions.find(option => option.value === yieldId);
-    return yieldOption ? yieldOption.label : 'Unknown';
-}
-
-const getEndDate = (startDate: number, periodInterval: number, totalIntervals: number): string => {
-    return new Date(startDate * 1000 + periodInterval * totalIntervals * 1000).toLocaleDateString("en-US");
-};
-
-const formatAddress = (address: string) => `${address.slice(0, 5)}...${address.slice(-4)}`;
-
-const formatDate = (timestamp: number) => {
-    return new Date(timestamp * 1000).toLocaleDateString("en-US");
-};
-
 const handlePairSwap = async (contract: SwapContract, account: string) => {
     const cryptoSwapAddr = addresses.arbitrum.contracts.cryptoSwap;
 
@@ -124,7 +93,13 @@ const handlePairSwap = async (contract: SwapContract, account: string) => {
 
 
 const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status, myPosition }) => {
+    const router = useRouter();
     const { account } = useContext(AccountContext);
+
+    const handleCardClick = (contract: SwapContract) => {
+        router.push(`/markets/${contract.contractMasterId}/${contract.contractId}`);
+    };
+
 
     return (
         <Flex flexWrap="wrap" ml={24}>
@@ -132,7 +107,10 @@ const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status, myPosition }) 
                 (!myPosition || contract.userA.toLowerCase() === account) &&
                 (status === null || contract.status.toString() === status)
             ).map((contract, index) => (
-                <Box key={index} p={4} shadow="md" backgroundColor={colors.offBlack} borderWidth="1px" borderRadius="lg" m={2} width="300px">
+                <Box key={index} p={4} shadow="md" backgroundColor={colors.offBlack} borderWidth="1px" borderRadius="lg" m={2} width="300px"
+                    onClick={() => handleCardClick(contract)}
+                    cursor="pointer"
+                >
                     <Flex justifyContent="space-between">
                         <Text color={colors.offWhite} fontSize="xl" fontWeight="bold">{getFeedLabel(contract.legA.feedId)}</Text>
                         <Badge colorScheme={getStatusProps(contract.status.toString()).colorScheme} mb={3}>
