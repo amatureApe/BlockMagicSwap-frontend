@@ -31,12 +31,12 @@ const SearchBarMenu: React.FC<SearchMenuProps> = ({ setStatus, setMyPosition, my
 
             <Flex ml={4} align="center">
                 <Button mr={2} px={10} backgroundColor={colors.lightBlue[200]} color={colors.offBlack}>Filters</Button>
-                <FormControl display="flex" alignItems="center">
-                    <FormLabel htmlFor="market-view-switch" mb="0" ml={2} color={colors.offWhite}>
-                        View
-                    </FormLabel>
-                    <Switch id="market-view-switch" colorScheme='blue' onChange={() => setMyPosition(!myPosition)} />
-                </FormControl>
+                <Flex direction="column" ml={2}>
+                    <Text>My Positions</Text>
+                    <Flex justifyContent="center">
+                        <Switch id="market-view-switch" colorScheme='blue' onChange={() => setMyPosition(!myPosition)} />
+                    </Flex>
+                </Flex>
             </Flex>
         </Flex>
     );

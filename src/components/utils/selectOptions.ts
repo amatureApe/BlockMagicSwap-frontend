@@ -2,8 +2,8 @@ export const periodOptions = [
     { value: 0, label: "Daily" },
     { value: 1, label: "Weekly" },
     { value: 2, label: "Monthly" },
-    { value: 3, label: "Quarterly" },
-    { value: 4, label: "Yearly" },
+    // { value: 3, label: "Quarterly" },
+    // { value: 4, label: "Yearly" },
 ];
 
 export const yieldOptions = [

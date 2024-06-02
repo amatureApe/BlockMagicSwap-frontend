@@ -14,6 +14,7 @@ import cryptoSwapAutomatedAbi from '@/contract/abis/CryptoSwapAutomated.json';
 import { addresses } from '@/contract/addresses';
 import { periodOptions, yieldOptions } from './utils/selectOptions';
 import { getCurrentAddresses } from '@/utils/helperFunctions';
+import { link } from 'fs';
 
 const formatDate = (timestamp: number) => new Date(timestamp).toLocaleDateString();
 
@@ -116,7 +117,7 @@ const CreatePositionCard: React.FC = () => {
 
         try {
             // Check if the user has already approved the settlement token for the contract
-            if (settlementTokenAddress !== undefined && account !== null && notionalAmount !== null) {
+            if (settlementTokenAddress !== undefined && account !== null && notionalAmount !== null && spenderAddress !== undefined) {
                 const isApproved = await checkApproval(settlementTokenAddress, spenderAddress, account, notionalAmount);
                 if (!isApproved) {
 
@@ -143,26 +144,30 @@ const CreatePositionCard: React.FC = () => {
                 }
 
                 if (currentChain !== 'arbitrum' && chainlinkAutomation === true) {
-                    toast({
-                        title: "Chainlink Approval Required",
-                        description: "Please approve the token to continue with creating the swap.",
-                        status: "info",
-                        duration: 5000,
-                        isClosable: true,
-                        position: "top",
-                    });
 
                     // If not approved, ask for approval
-                    await approve(LINK, spenderAddress);
+                    const linkIsApproved = await checkApproval(LINK as string, spenderAddress, account, notionalAmount)
+                    if (!linkIsApproved) {
+                        toast({
+                            title: "Chainlink Approval Required",
+                            description: "Please approve the token to continue with creating the swap.",
+                            status: "info",
+                            duration: 5000,
+                            isClosable: true,
+                            position: "top",
+                        });
 
-                    toast({
-                        title: "Chainlink Approval Successful",
-                        description: "Token has been approved for the contract.",
-                        status: "success",
-                        duration: 5000,
-                        isClosable: true,
-                        position: "top",
-                    });
+                        await approve(LINK as string, spenderAddress);
+
+                        toast({
+                            title: "Chainlink Approval Successful",
+                            description: "Token has been approved for the contract.",
+                            status: "success",
+                            duration: 5000,
+                            isClosable: true,
+                            position: "top",
+                        });
+                    }
                 }
             }
 
@@ -170,7 +175,7 @@ const CreatePositionCard: React.FC = () => {
 
             // After approval, proceed to create the swap
             const contract = await contractConnection({
-                address: cryptoSwapAddr,
+                address: cryptoSwapAddr as string,
                 abi: currentChain === 'arbitrum' ? cryptoSwapAbi : cryptoSwapAutomatedAbi
             });
 
