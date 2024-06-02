@@ -8,14 +8,14 @@ import { ArrowDownIcon, ArrowUpIcon } from '@chakra-ui/icons';
 import { colors } from './styles/colors';
 import contractConnection from '@/contract/contractConnection';
 import { checkApproval, approve } from '@/contract/checkApproval';
-import { addresses } from '@/contract/addresses';
 import cryptoSwapAbi from '@/contract/abis/CryptoSwap.json';
-import { feedOptions, periodOptions, tokenOptions, yieldOptions } from './utils/selectOptions';
+import cryptoSwapAutomatedAbi from '@/contract/abis/CryptoSwapAutomated.json';
+
+import { addresses } from '@/contract/addresses';
+import { periodOptions, yieldOptions } from './utils/selectOptions';
+import { getCurrentAddresses } from '@/utils/helperFunctions';
 
 const formatDate = (timestamp: number) => new Date(timestamp).toLocaleDateString();
-
-// @ts-ignore
-const getCurrentAddresses = (chain) => addresses[chain] || addresses.arbitrum; // Default to Arbitrum if not specified
 
 const CreatePositionCard: React.FC = () => {
     const { account, currentChain } = useContext(AccountContext);
@@ -39,7 +39,14 @@ const CreatePositionCard: React.FC = () => {
     const toast = useToast();
 
     const currentAddresses = getCurrentAddresses(currentChain);
-    const { cryptoSwapAddr } = currentAddresses.contracts;
+    const feedOptions = currentAddresses.priceFeeds;
+    const tokenOptions = currentAddresses.tokens;
+
+    console.log("PING", feedOptions)
+
+    const { cryptoSwap: cryptoSwapAddr, chainlink: LINK } = currentAddresses.contracts;
+
+    console.log(account, currentChain, cryptoSwapAddr)
 
     const handleNumericChange = (value: string, setState: React.Dispatch<React.SetStateAction<number | null>>) => {
         const numValue = Number(value);
@@ -70,6 +77,8 @@ const CreatePositionCard: React.FC = () => {
 
     const checkFields = () => {
         const isValidInput = (value: any): boolean => value !== null && value !== undefined;
+
+        console.log(contractCreationCount, notionalAmount, startDate, feedIdA, feedIdB, periodInterval, totalIntervals, settlementTokenId)
 
         if (!isValidInput(contractCreationCount) || !isValidInput(notionalAmount) || !isValidInput(startDate) ||
             !isValidInput(feedIdA) || !isValidInput(feedIdB) || !isValidInput(periodInterval) ||
@@ -126,12 +135,35 @@ const CreatePositionCard: React.FC = () => {
                         position: "top",
                     });
                 }
+
+                if (currentChain !== 'arbitrum' && chainlinkAutomation === true) {
+                    toast({
+                        title: "Chainlink Approval Required",
+                        description: "Please approve the token to continue with creating the swap.",
+                        status: "info",
+                        duration: 5000,
+                        isClosable: true,
+                        position: "top",
+                    });
+
+                    // If not approved, ask for approval
+                    await approve(LINK, spenderAddress);
+
+                    toast({
+                        title: "Chainlink Approval Successful",
+                        description: "Token has been approved for the contract.",
+                        status: "success",
+                        duration: 5000,
+                        isClosable: true,
+                        position: "top",
+                    });
+                }
             }
 
             // After approval, proceed to create the swap
             const contract = await contractConnection({
                 address: cryptoSwapAddr,
-                abi: cryptoSwapAbi
+                abi: currentChain === 'arbitrum' ? cryptoSwapAbi : cryptoSwapAutomatedAbi
             });
 
             if (contract) {
@@ -216,7 +248,8 @@ const CreatePositionCard: React.FC = () => {
                                 {feedOptions.map(option => (
                                     <option key={option.value} value={option.value}>{option.label}</option>
                                 ))}
-                            </Select>                        </Flex>
+                            </Select>
+                        </Flex>
                         <Box width="2px" bg={colors.lightBlue[200]} height="40px" />
                         <Flex>
                             <Select

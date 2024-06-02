@@ -30,7 +30,7 @@ const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status, myPosition }) 
     const toast = useToast();
 
     const currentAddresses = getCurrentAddresses(currentChain);
-    const { cryptoSwapAddr } = currentAddresses.contracts;
+    const { cryptoSwap: cryptoSwapAddr } = currentAddresses.contracts;
 
     const handleCardRoute = (contract: SwapContract) => {
         router.push(`/market/${contract.contractMasterId}/${contract.contractId}`);

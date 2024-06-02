@@ -14,12 +14,6 @@ const contractConnection = async ({ address, abi }: ContractConnectionParams): P
             await provider.send("eth_requestAccounts", []);
             const network = await provider.getNetwork();
 
-            if (network.chainId !== ARBITRUM_NETWORK_ID) {
-                console.error("Please connect to the Arbitrum network.");
-                alert("Please switch to the Arbitrum network in your wallet.");
-                return undefined;
-            }
-
             const signer = provider.getSigner();
             const contract = new ethers.Contract(address, abi, signer);
             return contract;
