@@ -24,7 +24,7 @@ const EducationPageContent = () => {
                         Reference: <Link href='https://www.investopedia.com/terms/s/swap.asp'>swaps-finance</Link>
                     </Note>
 
-                    {/* <Heading id="pros" as='h2' size='xl'> Advantages of Panda Finance </Heading>
+                    <Heading id="pros" as='h2' size='xl'> Advantages of Panda Finance </Heading>
                     <Heading as='h3' size='lg'> No clearing house, No expensive Fees </Heading>
                     <Text>
                         Every deals are hardcoded into the swap contract, ensuring execution according to the code and eliminating the need
@@ -106,7 +106,7 @@ const EducationPageContent = () => {
                             <List>
                                 <ListItem>
                                     <Text> <ListIcon as={ChevronRightIcon} color='green.500' />
-                                        After each period or at the swap's end, the winner can manually withdraw their profit.
+                                        After each period or at the swap termination, the winner can manually withdraw their profit.
                                     </Text>
                                 </ListItem>
                                 <ListItem>
@@ -127,7 +127,7 @@ const EducationPageContent = () => {
                             </List>
                         </ListItem>
 
-                    </OrderedList> */}
+                    </OrderedList>
 
                     <Heading id="#glossary" as='h2' size='xl'> Glossary </Heading>
                     <Heading as='h3' size='lg'> Participants </Heading>
