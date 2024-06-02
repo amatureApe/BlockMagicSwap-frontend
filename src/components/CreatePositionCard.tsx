@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { AccountContext } from '@/context/AccountContext';
 import { BigNumber, ethers } from 'ethers';
 
@@ -24,7 +24,6 @@ const CreatePositionCard: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
-    // contract state
     const [contractCreationCount, setContractCreationCount] = useState<number | null>(1);
     const [notionalAmount, setNotionalAmount] = useState<number | null>(null);
     const [startDate, setStartDate] = useState<number>(0);
@@ -35,14 +34,25 @@ const CreatePositionCard: React.FC = () => {
     const [settlementTokenId, setSettlementTokenId] = useState<number | null>(null);
     const [yieldId, setYieldId] = useState<number | null>(0);
     const [chainlinkAutomation, setChainlinkAutomation] = useState<boolean | null>(false);
+    const [cryptoSwapAddr, setCryptoSwapAddr] = useState<string | undefined>(undefined);
+    const [LINK, setLINK] = useState<string | undefined>(undefined);
+
+    const [feedOptions, setFeedOptions] = useState([]);
+    const [tokenOptions, setTokenOptions] = useState([]);
 
     const toast = useToast();
 
-    const currentAddresses = getCurrentAddresses(currentChain);
-    const feedOptions = currentAddresses.priceFeeds;
-    const tokenOptions = currentAddresses.tokens;
-
-    const { cryptoSwap: cryptoSwapAddr, chainlink: LINK } = currentAddresses.contracts;
+    useEffect(() => {
+        if (currentChain) {
+            const currentAddresses = getCurrentAddresses(currentChain);
+            if (currentAddresses) {
+                setFeedOptions(currentAddresses.priceFeeds);
+                setTokenOptions(currentAddresses.tokens);
+                setCryptoSwapAddr(currentAddresses.contracts.cryptoSwap);
+                setLINK(currentAddresses.contracts.chainlink);
+            }
+        }
+    }, [currentChain]);
 
     const handleNumericChange = (value: string, setState: React.Dispatch<React.SetStateAction<number | null>>) => {
         const numValue = Number(value);
