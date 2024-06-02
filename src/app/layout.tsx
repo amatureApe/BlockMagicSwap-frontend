@@ -1,17 +1,27 @@
 // layout.tsx
 'use client';
-import { Providers } from './providers';
 import React from 'react';
-import Header from '../components/Header';
-import { WalletProvider } from '@/context/WalletConnect';
-import Footer from '@/components/Footer';
 import { Flex, Box, useColorModeValue } from '@chakra-ui/react';
+import { Providers } from './providers';
+import Header from '../components/Header';
+import Footer from '@/components/Footer';
 import { colors } from '@/components/styles/colors';
-import { AccountProvider } from '@/context/AccountContext';
+import { AccountProvider, useAccount } from '@/context/AccountContext';
 
 interface RootLayoutProps {
   children: React.ReactNode;
 }
+
+const ContentWithHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { currentChain } = useAccount();
+
+  return (
+    <>
+      <Header currentChain={currentChain} />
+      <Box flex="1">{children}</Box>
+    </>
+  );
+};
 
 const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   const gradientDark = 'linear(to-r, pink.500, purple.500)';
@@ -30,10 +40,10 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   };
 
   return (
-    <AccountProvider>
-      <html lang="en">
-        <body>
-          <Providers>
+    <html lang="en">
+      <body>
+        <Providers>
+          <AccountProvider>
             <Flex direction="column" minHeight="100vh" position="relative" bg={colors.darkGray}>
               <Box
                 className="transition pointer-events-none"
@@ -71,14 +81,13 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
                 style={{ animationDelay: '-6s' }}
                 bg="#1BE3C2"
               />
-              <Header />
-              <Box flex="1">{children}</Box>
+              <ContentWithHeader>{children}</ContentWithHeader>
               <Footer />
             </Flex>
-          </Providers>
-        </body>
-      </html>
-    </AccountProvider>
+          </AccountProvider>
+        </Providers>
+      </body>
+    </html>
   );
 };
 

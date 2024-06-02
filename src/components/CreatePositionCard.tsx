@@ -14,8 +14,11 @@ import { feedOptions, periodOptions, tokenOptions, yieldOptions } from './utils/
 
 const formatDate = (timestamp: number) => new Date(timestamp).toLocaleDateString();
 
+// @ts-ignore
+const getCurrentAddresses = (chain) => addresses[chain] || addresses.arbitrum; // Default to Arbitrum if not specified
+
 const CreatePositionCard: React.FC = () => {
-    const { account } = useContext(AccountContext);
+    const { account, currentChain } = useContext(AccountContext);
 
     const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -31,9 +34,12 @@ const CreatePositionCard: React.FC = () => {
     const [totalIntervals, setTotalIntervals] = useState<number | null>(1);
     const [settlementTokenId, setSettlementTokenId] = useState<number | null>(null);
     const [yieldId, setYieldId] = useState<number | null>(0);
-    const [chainlinkAutomation, setChainlinkAutomation] = useState<boolean | null>(null);
+    const [chainlinkAutomation, setChainlinkAutomation] = useState<boolean | null>(false);
 
     const toast = useToast();
+
+    const currentAddresses = getCurrentAddresses(currentChain);
+    const { cryptoSwapAddr } = currentAddresses.contracts;
 
     const handleNumericChange = (value: string, setState: React.Dispatch<React.SetStateAction<number | null>>) => {
         const numValue = Number(value);
@@ -91,7 +97,7 @@ const CreatePositionCard: React.FC = () => {
         setIsLoading(true);
 
         const settlementTokenAddress = tokenOptions.find(o => o.value === settlementTokenId)?.address;
-        const spenderAddress = addresses.arbitrum.contracts.cryptoSwap;
+        const spenderAddress = cryptoSwapAddr;
 
         try {
             // Check if the user has already approved the settlement token for the contract
@@ -124,27 +130,43 @@ const CreatePositionCard: React.FC = () => {
 
             // After approval, proceed to create the swap
             const contract = await contractConnection({
-                address: addresses.arbitrum.contracts.cryptoSwap,
+                address: cryptoSwapAddr,
                 abi: cryptoSwapAbi
             });
 
-            console.log(startDate)
-
             if (contract) {
-                const tx = await contract.openSwap(
-                    BigNumber.from(contractCreationCount),
-                    BigNumber.from(notionalAmount),
-                    BigNumber.from(startDate / 1000), // convert from milliseconds to timestamp
-                    BigNumber.from(feedIdA),
-                    BigNumber.from(feedIdB),
-                    BigNumber.from(periodInterval),
-                    BigNumber.from(totalIntervals),
-                    BigNumber.from(settlementTokenId),
-                    BigNumber.from(yieldId)
-                );
-                console.log("Transaction hash:", tx.hash);
-                await tx.wait();
-                console.log("Transaction confirmed");
+                if (currentChain === 'arbitrum') {
+                    const tx = await contract.openSwap(
+                        BigNumber.from(contractCreationCount),
+                        BigNumber.from(notionalAmount),
+                        BigNumber.from(startDate / 1000), // convert from milliseconds to timestamp
+                        BigNumber.from(feedIdA),
+                        BigNumber.from(feedIdB),
+                        BigNumber.from(periodInterval),
+                        BigNumber.from(totalIntervals),
+                        BigNumber.from(settlementTokenId),
+                        BigNumber.from(yieldId)
+                    );
+                    console.log("Transaction hash:", tx.hash);
+                    await tx.wait();
+                    console.log("Transaction confirmed");
+                } else {
+                    const tx = await contract.openSwap(
+                        BigNumber.from(contractCreationCount),
+                        BigNumber.from(notionalAmount),
+                        BigNumber.from(startDate / 1000), // convert from milliseconds to timestamp
+                        BigNumber.from(feedIdA),
+                        BigNumber.from(feedIdB),
+                        BigNumber.from(periodInterval),
+                        BigNumber.from(totalIntervals),
+                        BigNumber.from(settlementTokenId),
+                        BigNumber.from(yieldId),
+                        chainlinkAutomation
+                    );
+                    console.log("Transaction hash:", tx.hash);
+                    await tx.wait();
+                    console.log("Transaction confirmed");
+                }
             } else {
                 throw new Error("Contract not connected");
             }
@@ -372,6 +394,29 @@ const CreatePositionCard: React.FC = () => {
                                     <option key={option.value} value={option.value}>{option.label}</option>
                                 ))}
                             </Select>
+                        </Flex>
+                        <Flex>
+                            <Flex alignItems="center">
+                                <Text fontSize="lg" color={colors.offWhite} as="b" mr={4}>Automation: </Text>
+                            </Flex>
+                            {currentChain !== 'arbitrum' ? (
+                                <Select
+                                    placeholder="Select Automation"
+                                    value={chainlinkAutomation === null ? '' : chainlinkAutomation.toString()}
+                                    onChange={(e) => setChainlinkAutomation(e.target.value === 'true')}
+                                    backgroundColor={colors.offBlack}
+                                    color={colors.lightBlue[100]}
+                                    borderColor={colors.lightBlue[200]}
+                                    _focus={{ borderColor: colors.lightBlue[200], borderWidth: '2px' }}
+                                >
+                                    <option value="true">Enabled</option>
+                                    <option value="false">Disabled</option>
+                                </Select>
+                            ) : (
+                                <Text fontSize="lg" color={colors.lightBlue[100]}>
+                                    Automation not available on current chain
+                                </Text>
+                            )}
                         </Flex>
                     </Flex>
                 </Collapse>

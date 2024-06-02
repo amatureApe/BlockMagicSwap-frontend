@@ -6,7 +6,7 @@ import cryptoSwapAbi from '@/contract/abis/CryptoSwap.json';
 import { addresses } from '@/contract/addresses';
 import contractConnection from '@/contract/contractConnection';
 import { SwapContract } from '@/contract/interfaces/SwapContract';
-import { getTokenAddress, getFeedLabel, getTokenLabel, getYieldLabel, getEndDate, formatAddress, formatDate, getStatusProps } from '@/utils/helperFunctions';
+import { getTokenAddress, getFeedLabel, getTokenLabel, getYieldLabel, getEndDate, formatAddress, formatDate, getStatusProps, getCurrentAddresses } from '@/utils/helperFunctions';
 import { useToast } from '@chakra-ui/react';
 import { checkApproval, approve } from '@/contract/checkApproval';
 
@@ -20,15 +20,19 @@ interface ContractDetailsPageProps {
     };
 }
 
-
 const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
-    const { account } = useContext(AccountContext);
+    const { account, currentChain } = useContext(AccountContext);
+
     const { contractMasterId, contractId } = params;
-    const [swapContract, setSwapContract] = useState<SwapContract | null>(null)
+    const [swapContract, setSwapContract] = useState<SwapContract | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
     const toast = useToast();
 
+    const currentAddresses = getCurrentAddresses(currentChain);
+    const { cryptoSwapAddr } = currentAddresses.contracts;
+
     const handlePairSwap = async (contract: SwapContract, account: string) => {
-        const cryptoSwapAddr = addresses.arbitrum.contracts.cryptoSwap;
 
         const cryptoSwap = await contractConnection({ address: cryptoSwapAddr, abi: cryptoSwapAbi });
 
@@ -139,6 +143,12 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
 
     useEffect(() => {
         async function fetchContractDetails() {
+            if (!contractMasterId || !contractId) {
+                console.error('Invalid contract master ID or contract ID.');
+                setIsLoading(false);
+                return;
+            }
+
             const contract = await contractConnection({
                 address: addresses.arbitrum.contracts.cryptoSwap,
                 abi: cryptoSwapAbi
@@ -150,13 +160,19 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
             } else {
                 console.error('Failed to connect to the contract.');
             }
+
+            setIsLoading(false);
         }
 
         fetchContractDetails();
-    });
+    }, [contractMasterId, contractId]);
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
 
     if (!swapContract) {
-        return <div>Loading...</div>;
+        return <div>Contract not found.</div>;
     }
 
     const { userA, userB, period, legA, legB, settlementTokenId, yieldId, notionalAmount, yieldShares, status } = swapContract;
@@ -185,10 +201,9 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
                         </Flex>
                     </Flex>
 
-
                     <Flex direction="column">
                         <Tooltip label={userB} aria-label="Full address">
-                            <Text color={colors.lightBlue[200]} fontSize="xl" mb={2}><strong>User A:</strong> {formatAddress(userA)}</Text>
+                            <Text color={colors.lightBlue[200]} fontSize="xl" mb={2}><strong>User B:</strong> {formatAddress(userB)}</Text>
                         </Tooltip>
 
                         <Flex direction="column" gap={1} mb={4}>
@@ -203,7 +218,6 @@ const ContractDetails: React.FC<ContractDetailsPageProps> = ({ params }) => {
                 <Flex justifyContent="center">
                     <Button w={200} bg={colors.offWhite} color={colors.offBlack} onClick={() => handleWithdraw(swapContract, account as string)}>Withdraw</Button>
                 </Flex>
-
 
                 <Divider my={6} />
 

@@ -4,8 +4,14 @@ import { Flex, Box, Text, Button, Link, useColorModeValue } from '@chakra-ui/rea
 import { colors } from './styles/colors';
 import { useAccount } from '@/context/AccountContext';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+    currentChain: string | null;
+}
+
+const Header: React.FC<HeaderProps> = ({ currentChain }) => {
     const { account, connectAccount } = useAccount();
+
+    console.log(currentChain)
 
     const bgColor = useColorModeValue(`#000000BB`, '#000000CC');
 
@@ -22,27 +28,35 @@ const Header: React.FC = () => {
                     <Text fontSize="lg" fontWeight="bold">Create</Text>
                 </Link>
                 {/* <Link href="/dashboard">
-                    <Text fontSize="lg" fontWeight="bold">Dashboard</Text>
-                </Link>
-                <Link href="/staking">
-                    <Text fontSize="lg" fontWeight="bold">Staking</Text>
-                </Link> */}
+          <Text fontSize="lg" fontWeight="bold">Dashboard</Text>
+        </Link>
+        <Link href="/staking">
+          <Text fontSize="lg" fontWeight="bold">Staking</Text>
+        </Link> */}
             </Flex>
-            <Box>
-                {account ? (
-                    <Flex direction="row" align="center" px={5}>
-                        <Button bg={colors.lightBlue[200]} color={colors.offBlack} _hover={{ bg: colors.lightBlue[100] }}>
-                            <Flex direction="column">
-                                <Text fontSize={16} color={colors.offBlack}>{account.slice(0, 5) + '...' + account.slice(-4)}</Text>
-                            </Flex>
+            <Flex align="center">
+                <Box>
+                    {account ? (
+                        <Flex direction="row" align="center" px={5}>
+                            <Button bg={colors.lightBlue[200]} color={colors.offBlack} _hover={{ bg: colors.lightBlue[100] }}>
+                                <Flex direction="column">
+                                    <Text fontSize={16} color={colors.offBlack}>{account.slice(0, 5) + '...' + account.slice(-4)}</Text>
+                                </Flex>
+                            </Button>
+                            {currentChain && (
+                                <Text fontSize="lg" fontWeight="bold" color={colors.offWhite} ml={4}>
+                                    {currentChain.slice(0, 3).toUpperCase()}
+                                </Text>
+                            )}
+                        </Flex>
+
+                    ) : (
+                        <Button bgColor={colors.lightBlue[200]} color={colors.offBlack} onClick={connectAccount}>
+                            Connect Wallet
                         </Button>
-                    </Flex>
-                ) : (
-                    <Button bgColor={colors.lightBlue[200]} color={colors.offBlack} onClick={connectAccount}>
-                        Connect Wallet
-                    </Button>
-                )}
-            </Box>
+                    )}
+                </Box>
+            </Flex>
         </Flex>
     );
 };

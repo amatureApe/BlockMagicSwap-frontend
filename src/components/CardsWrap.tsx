@@ -14,7 +14,7 @@ import contractConnection from '@/contract/contractConnection';
 import { checkApproval, approve } from '@/contract/checkApproval';
 import { addresses } from '@/contract/addresses';
 import cryptoSwapAbi from '@/contract/abis/CryptoSwap.json';
-import { getTokenAddress, getFeedLabel, getTokenLabel, getYieldLabel, getEndDate, formatAddress, formatDate, getStatusProps } from '@/utils/helperFunctions';
+import { getTokenAddress, getFeedLabel, getTokenLabel, getYieldLabel, getEndDate, formatAddress, formatDate, getStatusProps, getCurrentAddresses } from '@/utils/helperFunctions';
 import { useToast } from '@chakra-ui/react';
 
 interface CardsWrapProps {
@@ -25,17 +25,20 @@ interface CardsWrapProps {
 
 const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status, myPosition }) => {
     const router = useRouter();
-    const { account } = useContext(AccountContext);
+    const { account, currentChain } = useContext(AccountContext);
+
     const toast = useToast();
 
+    const currentAddresses = getCurrentAddresses(currentChain);
+    const { cryptoSwapAddr } = currentAddresses.contracts;
+
     const handleCardRoute = (contract: SwapContract) => {
-        router.push(`/markets/${contract.contractMasterId}/${contract.contractId}`);
+        router.push(`/market/${contract.contractMasterId}/${contract.contractId}`);
     };
 
     const handlePairSwap = async (contract: SwapContract, account: string) => {
-        const cryptoSwapAddr = addresses.arbitrum.contracts.cryptoSwap;
 
-        const cryptoSwap = await contractConnection({ address: cryptoSwapAddr, abi: cryptoSwapAbi });
+        const contractInstance = await contractConnection({ address: cryptoSwapAddr, abi: cryptoSwapAbi });
 
         if (!account) {
             console.log(account)
@@ -50,7 +53,7 @@ const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status, myPosition }) 
             return;
         }
 
-        if (cryptoSwap) {
+        if (contractInstance) {
             const isApproved = await checkApproval(getTokenAddress(contract.settlementTokenId), cryptoSwapAddr, account, contract.notionalAmount);
             if (!isApproved) {
                 try {
@@ -70,7 +73,7 @@ const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status, myPosition }) 
             }
 
             try {
-                const swapTx = await cryptoSwap.pairSwap(contract.contractMasterId, contract.contractId);
+                const swapTx = await contractInstance.pairSwap(contract.contractMasterId, contract.contractId);
                 await swapTx.wait();
             } catch (error) {
                 console.error('Failed to execute pair swap.', error);
@@ -124,7 +127,7 @@ const CardsWrap: React.FC<CardsWrapProps> = ({ contracts, status, myPosition }) 
     return (
         <Flex flexWrap="wrap" ml={24}>
             {contracts.filter(contract =>
-                (!myPosition || contract.userA.toLowerCase() === account) &&
+                (!myPosition || contract.userA === account) &&
                 (status === null || contract.status.toString() === status)
             ).map((contract, index) => (
                 <Box key={index} p={4} shadow="md" backgroundColor={colors.offBlack} borderWidth="1px" borderRadius="lg" m={2} width="300px">

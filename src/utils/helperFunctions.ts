@@ -1,5 +1,5 @@
 import { feedOptions, tokenOptions, yieldOptions } from "@/components/utils/selectOptions";
-
+import { addresses } from "@/contract/addresses";
 
 export const getFeedLabel = (feedId: number): string => {
     const feed = feedOptions.find(option => option.value === feedId);
@@ -45,3 +45,6 @@ export const getStatusProps = (status: string) => {
             return { label: 'UNKNOWN', colorScheme: 'gray' };
     }
 };
+
+// @ts-ignore
+export const getCurrentAddresses = (chain) => addresses[chain] || addresses.arbitrum; // Default to Arbitrum if not specified

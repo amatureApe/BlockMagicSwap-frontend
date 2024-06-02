@@ -30,5 +30,21 @@ export const addresses = {
             ethUsd: "0xF9680D99D6C9589e2a93a78A04A279e509205945",
             btcUsd: "0xc907E116054Ad103354f2D350FD2514433D57F6f"
         }
+    },
+    avalanche: {
+        contracts: {
+            cryptoSwap: "<address>",
+            yieldStrategyManager: "<address>",
+            priceFeedManager: "<address>",
+        },
+        tokens: {
+            usdc: "<address>",
+            weth: "<address>",
+            wbtc: "<address>",
+        },
+        priceFeeds: {
+            ethUsd: "<address>",
+            btcUsd: "<address>"
+        }
     }
-}
+};
